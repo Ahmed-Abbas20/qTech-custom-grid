@@ -1,0 +1,364 @@
+@model qTech_custom_grid.ViewModels.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "تفاصيل المستخدم";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "User")">إدارة المستخدمين</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">تفاصيل المستخدم</li>
+                </ol>
+            </nav>
+            <h2 class="text-primary">
+                <i class="fas fa-user"></i> تفاصيل المستخدم
+            </h2>
+            <hr />
+        </div>
+    </div>
+
+    <!-- User Details Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> معلومات المستخدم
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-user"></i> المعلومات الشخصية
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>الاسم الكامل:</strong>
+                        </div>
+                        <div class="col-md-9">
+                            @Model.FullName
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>رقم الهوية:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-primary">@Model.IdentityNumber</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>تاريخ الميلاد:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @Model.DateOfBirth.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>الجنس:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @Model.GenderName
+                        </div>
+                        <div class="col-md-3">
+                            <strong>الجنسية:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @Model.NationalityName
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-phone"></i> معلومات الاتصال
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>رقم الجوال:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <i class="fas fa-mobile-alt text-success"></i> @Model.MobileNumber
+                        </div>
+                        <div class="col-md-3">
+                            <strong>البريد الإلكتروني:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @if (!string.IsNullOrEmpty(Model.Email))
+                            {
+                                <i class="fas fa-envelope text-info"></i> 
+                                <a href="mailto:@Model.Email">@Model.Email</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">غير محدد</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Family and Social Information -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-heart"></i> المعلومات الاجتماعية والتعليمية
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>الحالة الاجتماعية:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @if (!string.IsNullOrEmpty(Model.MaritalStatusName))
+                            {
+                                @Model.MaritalStatusName
+                            }
+                            else
+                            {
+                                <span class="text-muted">غير محدد</span>
+                            }
+                        </div>
+                        <div class="col-md-3">
+                            <strong>المؤهل الدراسي:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @if (!string.IsNullOrEmpty(Model.EducationalQualification))
+                            {
+                                @Model.EducationalQualification
+                            }
+                            else
+                            {
+                                <span class="text-muted">غير محدد</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Banking Information -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-university"></i> المعلومات المصرفية
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>البنك:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            @if (!string.IsNullOrEmpty(Model.BankName))
+                            {
+                                <i class="fas fa-university text-primary"></i> @Model.BankName
+                            }
+                            else
+                            {
+                                <span class="text-muted">غير محدد</span>
+                            }
+                        </div>
+                        <div class="col-md-3">
+                            <strong>رقم الحساب البنكي:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-secondary">@Model.BankAccountNumber</span>
+                        </div>
+                    </div>
+
+                    <!-- Employment Information -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-briefcase"></i> معلومات العمل
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>تاريخ التعيين:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <i class="fas fa-calendar text-success"></i> @Model.HiringDate.ToString("yyyy-MM-dd")
+                        </div>
+                        <div class="col-md-3">
+                            <strong>رصيد الإجازات:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-info fs-6">
+                                <i class="fas fa-calendar-check"></i> @Model.VacationBalance يوم
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- System Information -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary border-bottom pb-2">
+                                <i class="fas fa-cog"></i> معلومات النظام
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>تاريخ الإنشاء:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>آخر تحديث:</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="@Url.Action("Index", "User")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> العودة للقائمة
+                        </a>
+                        <div>
+                            <a href="@Url.Action("Edit", "User", new { id = Model.Id })" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete(@Model.Id)">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف هذا المستخدم؟</p>
+                <p><strong>@Model.FullName</strong></p>
+                <p class="text-danger"><small>لا يمكن التراجع عن هذا الإجراء</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(userId) {
+            $('#deleteConfirmModal').modal('show');
+            
+            $('#confirmDeleteBtn').off('click').on('click', function() {
+                // Create form for delete request
+                const form = $('<form>', {
+                    'method': 'POST',
+                    'action': '/User/Delete'
+                });
+                
+                // Add anti-forgery token
+                form.append($('@Html.AntiForgeryToken()'));
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'id',
+                    'value': userId
+                }));
+                
+                // Submit form
+                $('body').append(form);
+                form.submit();
+            });
+        }
+
+        // Show success/error messages if any
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            $(document).ready(function() {
+                showNotification('success', '@TempData["SuccessMessage"]');
+            });
+            </text>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            $(document).ready(function() {
+                showNotification('error', '@TempData["ErrorMessage"]');
+            });
+            </text>
+        }
+
+        function showNotification(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            const alert = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="${icon}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
+            
+            $('.container-fluid').prepend(alert);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.alert('close');
+            }, 5000);
+        }
+    </script>
+}
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    
+    .badge {
+        font-size: 0.875em;
+    }
+    
+    .border-bottom {
+        border-bottom: 2px solid #dee2e6 !important;
+    }
+    
+    .text-primary {
+        color: #0d6efd !important;
+    }
+    
+    .text-secondary {
+        color: #6c757d !important;
+    }
+</style>

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "qTech-custom-grid", "qTech-custom-grid\qTech-custom-grid.csproj", "{69431612-077E-46C7-AF3F-812C703A8C84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{036B80DB-B3DB-4F0A-A8AF-45823F71F839}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLL", "BLL\BLL.csproj", "{46225D4F-D737-4EF8-9057-EF250C1B7366}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69431612-077E-46C7-AF3F-812C703A8C84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69431612-077E-46C7-AF3F-812C703A8C84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69431612-077E-46C7-AF3F-812C703A8C84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69431612-077E-46C7-AF3F-812C703A8C84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{036B80DB-B3DB-4F0A-A8AF-45823F71F839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{036B80DB-B3DB-4F0A-A8AF-45823F71F839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{036B80DB-B3DB-4F0A-A8AF-45823F71F839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{036B80DB-B3DB-4F0A-A8AF-45823F71F839}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46225D4F-D737-4EF8-9057-EF250C1B7366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46225D4F-D737-4EF8-9057-EF250C1B7366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46225D4F-D737-4EF8-9057-EF250C1B7366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46225D4F-D737-4EF8-9057-EF250C1B7366}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

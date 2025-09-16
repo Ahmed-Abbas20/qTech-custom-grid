@@ -1,0 +1,784 @@
+@model qTech_custom_grid.ViewModels.CreateUserViewModel
+@{
+    var formData = ViewBag.FormData as qTech_custom_grid.ViewModels.UserFormDataViewModel;
+}
+
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">
+                    <i class="fas fa-user-plus"></i> إضافة مستخدم جديد
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            
+            <form id="createUserForm" method="post" action="/User/Create">
+                @Html.AntiForgeryToken()
+                
+                <div class="modal-body">
+                    <!-- Name Fields -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الاسم الأول <span id="spnA_FirstName" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_FirstName" name="FirstName" type="text" class="form-control" maxlength="15" placeholder="أدخل الاسم الأول" />
+                            <span id="spnE_FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">اسم الأب <span id="spnA_FatherName" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_FatherName" name="FatherName" type="text" class="form-control" maxlength="15" placeholder="أدخل اسم الأب" />
+                            <span id="spnE_FatherName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">اسم الجد <span id="spnA_GrandFatherName" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_GrandFatherName" name="GrandFatherName" type="text" class="form-control" maxlength="15" placeholder="أدخل اسم الجد" />
+                            <span id="spnE_GrandFatherName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">لقب العائلة <span id="spnA_FamilyName" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_FamilyName" name="FamilyName" type="text" class="form-control" maxlength="15" placeholder="أدخل لقب العائلة" />
+                            <span id="spnE_FamilyName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ الميلاد <span id="spnA_DateOfBirth" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_DateOfBirth" name="DateOfBirth" type="date" class="form-control" 
+                                   title="يجب أن يكون العمر بين 18 و 65 سنة" 
+                                   min="1959-01-01" max="2006-12-31" />
+                            <span id="spnE_DateOfBirth" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الهوية <span id="spnA_IdentityNumber" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_IdentityNumber" name="IdentityNumber" type="text" class="form-control" maxlength="10" placeholder="أدخل رقم الهوية (10 أرقام)" />
+                            <span id="spnE_IdentityNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الجوال <span id="spnA_MobileNumber" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_MobileNumber" name="MobileNumber" type="text" class="form-control" maxlength="12" placeholder="مثال: 966501234567" />
+                            <span id="spnE_MobileNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">البريد الإلكتروني <span id="spnA_Email" class="fa"></span></label>
+                            <input id="txt_Email" name="Email" type="email" class="form-control" maxlength="50" placeholder="مثال: user@example.com" />
+                            <span id="spnE_Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Gender and Nationality -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الجنس <span id="spnA_Gender" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input id="radio_Male" name="Gender" type="radio" value="1" class="form-check-input" checked />
+                                    <label for="radio_Male" class="form-check-label">ذكر</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input id="radio_Female" name="Gender" type="radio" value="2" class="form-check-input" />
+                                    <label for="radio_Female" class="form-check-label">أنثى</label>
+                                </div>
+                            </div>
+                            <span id="spnE_Gender" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الجنسية <span id="spnA_Nationality" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <select id="ddl_Nationality" name="Nationality" class="form-select">
+                                <option value="">اختر الجنسية</option>
+                                <option value="1">سعودي</option>
+                                <option value="2">أجنبي</option>
+                            </select>
+                            <span id="spnE_Nationality" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bank Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الحساب البنكي <span id="spnA_BankAccountNumber" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_BankAccountNumber" name="BankAccountNumber" type="text" class="form-control" maxlength="30" placeholder="أدخل رقم الحساب البنكي" />
+                            <span id="spnE_BankAccountNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">اسم البنك <span id="spnA_BankId" class="fa"></span></label>
+                            <select id="ddl_BankId" name="BankId" class="form-select">
+                                <option value="">اختر البنك</option>
+                                @if (formData?.Banks != null)
+                                {
+                                    @foreach (var bank in formData.Banks)
+                                    {
+                                        <option value="@bank.Value">@bank.Text</option>
+                                    }
+                                }
+                            </select>
+                            <span id="spnE_BankId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">الحالة الاجتماعية <span id="spnA_MaritalStatusId" class="fa"></span></label>
+                            <select id="ddl_MaritalStatusId" name="MaritalStatusId" class="form-select">
+                                <option value="">اختر الحالة الاجتماعية</option>
+                                @if (formData?.MaritalStatuses != null)
+                                {
+                                    @foreach (var status in formData.MaritalStatuses)
+                                    {
+                                        <option value="@status.Value">@status.Text</option>
+                                    }
+                                }
+                            </select>
+                            <span id="spnE_MaritalStatusId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">المؤهل الدراسي <span id="spnA_EducationalQualification" class="fa"></span></label>
+                            <input id="txt_EducationalQualification" name="EducationalQualification" type="text" class="form-control" maxlength="200" />
+                            <span id="spnE_EducationalQualification" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Employment Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ التعيين <span id="spnA_DateOfAppointment" class="fa fa-asterisk" style="color: black;">*</span></label>
+                            <input id="txt_DateOfAppointment" name="DateOfAppointment" type="date" class="form-control" 
+                                   title="تاريخ التعيين لا يمكن أن يكون في المستقبل"
+                                   min="1980-01-01" />
+                            <span id="spnE_DateOfAppointment" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رصيد الإجازات</label>
+                            <div class="form-control-plaintext" id="lbl_LeaveBalance">0 يوم</div>
+                            <small class="text-muted">يتم حساب الرصيد تلقائياً بمعدل 21 يوم لكل سنة</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-warning" id="btn_ClearValidation">
+                        <i class="fas fa-eraser"></i> مسح التحقق
+                    </button>
+                    <button type="button" class="btn btn-info" id="btn_ResetForm">
+                        <i class="fas fa-redo"></i> إعادة تعيين
+                    </button>
+                    <button type="button" class="btn btn-success" id="btn_SaveUser">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Show the modal
+    $('#createUserModal').modal('show');
+    
+    // Helper function to format date for mValidation (YYYY/MM/DD format)
+    function formatDateForValidation(date) {
+        var day = String(date.getDate()).padStart(2, '0');
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var year = date.getFullYear();
+        return year + '/' + month + '/' + day; // YYYY/MM/DD format for mValidation
+    }
+    
+    // Initialize comprehensive validation array using mValidation framework with proper asterisk color logic
+    var validationArray = [
+        // First Name - Required field with character validation
+        {
+            Element: 'txt_FirstName',
+            spn_A: 'spnA_FirstName',
+            spn_E: 'spnE_FirstName',
+            spn_L: null,
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال الاسم الأول'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 15,
+                        Msg: 'الاسم الأول لا يجب أن يتجاوز 15 حرف'
+                    },
+                    minLength: {
+                        Value: 2,
+                        Msg: 'الاسم الأول يجب أن يكون على الأقل حرفين'
+                    }
+                },
+                Format: {
+                    Key: 'charactersOnly',
+                    Msg: 'الاسم الأول يجب أن يحتوي على حروف فقط'
+                }
+            },
+            Color: 'red',
+            isBlur: true,
+            isChange: false
+        },
+        // Father Name - Required field with character validation
+        {
+            Element: 'txt_FatherName',
+            spn_A: 'spnA_FatherName',
+            spn_E: 'spnE_FatherName',
+            spn_L: null,
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال اسم الأب'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 15,
+                        Msg: 'اسم الأب لا يجب أن يتجاوز 15 حرف'
+                    },
+                    minLength: {
+                        Value: 2,
+                        Msg: 'اسم الأب يجب أن يكون على الأقل حرفين'
+                    }
+                },
+                Format: {
+                    Key: 'charactersOnly',
+                    Msg: 'اسم الأب يجب أن يحتوي على حروف فقط'
+                }
+            },
+            Color: 'red',
+            isBlur: true,
+            isChange: false
+        },
+        {
+            Element: 'txt_GrandFatherName',
+            spn_A: 'spnA_GrandFatherName',
+            spn_E: 'spnE_GrandFatherName',
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال اسم الجد'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 15,
+                        Msg: 'اسم الجد لا يجب أن يتجاوز 15 حرف'
+                    }
+                }
+            },
+            isBlur: true
+        },
+        {
+            Element: 'txt_FamilyName',
+            spn_A: 'spnA_FamilyName',
+            spn_E: 'spnE_FamilyName',
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال لقب العائلة'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 15,
+                        Msg: 'لقب العائلة لا يجب أن يتجاوز 15 حرف'
+                    }
+                }
+            },
+            isBlur: true
+        },
+        // Date of Birth validation using Required + vFunction approach
+        {
+            Element: 'txt_DateOfBirth',
+            spn_A: 'spnA_DateOfBirth',
+            spn_E: 'spnE_DateOfBirth',
+            validationScheme: {
+                vFunction: {
+                    Func: function(value, obj) {
+                        console.log('🚀 === DATE VALIDATION FUNCTION CALLED ===');
+                        console.log('🗓️ تحقق من تاريخ الميلاد:', value);
+                        
+                        // Get value directly from element since mValidation might not handle date inputs correctly
+                        var actualValue = document.getElementById('txt_DateOfBirth').value;
+                        console.log('🔍 Actual element value:', actualValue);
+                        
+                        // Use the actual value instead of the passed value
+                        value = actualValue;
+                        
+                        // Check if empty (Required validation)
+                        if (!value || value.trim() === '') {
+                            console.log('❌ تاريخ الميلاد فارغ');
+                            return 'برجاء ادخال تاريخ الميلاد'; // Return error message instead of false
+                        }
+                        
+                        // Check format YYYY-MM-DD (HTML5 date input format)
+                        var datePattern = /^\d{4}-\d{2}-\d{2}$/;
+                        if (!datePattern.test(value)) {
+                            console.log('❌ صيغة التاريخ غير صحيحة:', value);
+                            return false;
+                        }
+                        
+                        // Parse the date (HTML5 format: YYYY-MM-DD)
+                        var parts = value.split('-');
+                        var year = parseInt(parts[0]);
+                        var month = parseInt(parts[1]);
+                        var day = parseInt(parts[2]);
+                        
+                        // Create date object
+                        var inputDate = new Date(year, month - 1, day);
+                        
+                        // Check if date is valid
+                        if (inputDate.getFullYear() !== year || 
+                            inputDate.getMonth() !== (month - 1) || 
+                            inputDate.getDate() !== day) {
+                            console.log('❌ تاريخ غير صحيح');
+                            return false;
+                        }
+                        
+                        // Check age range (18-65 years)
+                        var today = new Date();
+                        var age = today.getFullYear() - year;
+                        var monthDiff = today.getMonth() - (month - 1);
+                        var dayDiff = today.getDate() - day;
+                        
+                        // Adjust age if birthday hasn't occurred this year
+                        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                            age--;
+                        }
+                        
+                        console.log('📅 العمر المحسوب:', age);
+                        
+                        if (age < 18 || age > 65) {
+                            console.log('❌ العمر خارج النطاق المسموح (18-65)');
+                            return false;
+                        }
+                        
+                        console.log('✅ تاريخ الميلاد صحيح');
+                        return true;
+                    },
+                    Msg: 'يجب أن يكون العمر بين 18 و 65 سنة'
+                }
+            },
+            Color: 'red',
+            isBlur: true,
+            isChange: false
+        },
+        // Identity Number validation
+        {
+            Element: 'txt_IdentityNumber',
+            spn_A: 'spnA_IdentityNumber',
+            spn_E: 'spnE_IdentityNumber',
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء إدخال رقم الهوية'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 10,
+                        Msg: 'رقم الهوية لا يجب أن يتجاوز 10 أرقام'
+                    }
+                },
+                Format: {
+                    Key: 'int',
+                    Msg: 'رقم الهوية يجب أن يحتوي على أرقام فقط'
+                },
+                checkExist: {
+                    Url: '/User/CheckIdentityExists',
+                    Data: function() {
+                        return JSON.stringify({ identityNumber: $('#txt_IdentityNumber').val() });
+                    },
+                    successValue: false,
+                    Msg: 'عفوا رقم الهوية مكرر'
+                }
+            },
+            isBlur: true
+        },
+        // Mobile Number validation
+        {
+            Element: 'txt_MobileNumber',
+            spn_A: 'spnA_MobileNumber',
+            spn_E: 'spnE_MobileNumber',
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال رقم الجوال'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 12,
+                        Msg: 'رقم الجوال لا يجب أن يتجاوز 12 رقم'
+                    }
+                },
+                Pattern: {
+                    Value: 'MOBILE',
+                    Msg: 'عفوا رقم الجوال لابد ان يبدأ بـ 9665'
+                }
+            },
+            isBlur: true
+        },
+        // Email validation
+        {
+            Element: 'txt_Email',
+            spn_A: 'spnA_Email',
+            spn_E: 'spnE_Email',
+            validationScheme: {
+                Pattern: {
+                    Value: 'EMAIL',
+                    Msg: 'عفوا صيغة البريد الالكتروني غير صحيح'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 50,
+                        Msg: 'البريد الإلكتروني لا يجب أن يتجاوز 50 حرف'
+                    }
+                }
+            },
+            isBlur: true
+        },
+        // Bank Account Number validation
+        {
+            Element: 'txt_BankAccountNumber',
+            spn_A: 'spnA_BankAccountNumber',
+            spn_E: 'spnE_BankAccountNumber',
+            validationScheme: {
+                Required: {
+                    Msg: 'برجاء ادخال رقم الحساب البنكي'
+                },
+                Length: {
+                    maxLength: {
+                        Value: 30,
+                        Msg: 'رقم الحساب البنكي لا يجب أن يتجاوز 30 حرف'
+                    }
+                }
+            },
+            isBlur: true
+        },
+        // Nationality validation
+        {
+            Element: 'ddl_Nationality',
+            spn_A: 'spnA_Nationality',
+            spn_E: 'spnE_Nationality',
+            validationScheme: {
+                Required: {
+                    Value: '',
+                    Msg: 'برجاء اختيار الجنسية'
+                }
+            },
+            isChange: true
+        },
+        // Date of Appointment validation using same fix as birth date
+        {
+            Element: 'txt_DateOfAppointment',
+            spn_A: 'spnA_DateOfAppointment',
+            spn_E: 'spnE_DateOfAppointment',
+            validationScheme: {
+                vFunction: {
+                    Func: function(value, obj) {
+                        console.log('🚀 === APPOINTMENT DATE VALIDATION FUNCTION CALLED ===');
+                        console.log('🗓️ تحقق من تاريخ التعيين:', value);
+                        
+                        // Get value directly from element since mValidation might not handle date inputs correctly
+                        var actualValue = document.getElementById('txt_DateOfAppointment').value;
+                        console.log('🔍 Actual appointment date value:', actualValue);
+                        
+                        // Use the actual value instead of the passed value
+                        value = actualValue;
+                        
+                        // Check if empty (Required validation)
+                        if (!value || value.trim() === '') {
+                            console.log('❌ تاريخ التعيين فارغ');
+                            return 'برجاء ادخال تاريخ التعيين'; // Return error message
+                        }
+                        
+                        // Check format YYYY-MM-DD (HTML5 date input format)
+                        var datePattern = /^\d{4}-\d{2}-\d{2}$/;
+                        if (!datePattern.test(value)) {
+                            console.log('❌ صيغة تاريخ التعيين غير صحيحة:', value);
+                            return 'صيغة التاريخ غير صحيحة';
+                        }
+                        
+                        // Parse and validate appointment date
+                        var appointmentDate = new Date(value);
+                        var today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        appointmentDate.setHours(0, 0, 0, 0);
+                        
+                        // Check if date is valid
+                        if (isNaN(appointmentDate.getTime())) {
+                            console.log('❌ تاريخ التعيين غير صحيح');
+                            return 'تاريخ التعيين غير صحيح';
+                        }
+                        
+                        // Check if appointment date is not in the future
+                        if (appointmentDate > today) {
+                            console.log('❌ تاريخ التعيين لا يمكن أن يكون في المستقبل');
+                            return 'لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم';
+                        }
+                        
+                        console.log('✅ تاريخ التعيين صحيح');
+                        return true;
+                    }
+                }
+            },
+            Color: 'red',
+            isBlur: true,
+            isChange: false
+        }
+    ];
+
+    // Apply null safety fixes for mValidation
+    function applyNullSafetyFixes() {
+        console.log('تطبيق إصلاحات الأمان من القيم الفارغة...');
+        
+        // Store original getValue function
+        if (typeof window.originalGetValue === 'undefined' && typeof getValue === 'function') {
+            window.originalGetValue = getValue;
+            
+            // Override getValue to be null-safe
+            window.getValue = function(element) {
+                var value = window.originalGetValue(element);
+                return value === null || value === undefined ? "" : value;
+            };
+            
+            console.log('✅ تم تطبيق إصلاح getValue بنجاح');
+        }
+    }
+    
+    // Apply null safety fixes first
+    applyNullSafetyFixes();
+    
+    // HTML5 date input handles formatting automatically
+    // Set dynamic min/max dates for age range (18-65 years)
+    var today = new Date();
+    var minDate = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
+    var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    
+    $('#txt_DateOfBirth').attr('min', minDate.toISOString().split('T')[0]);
+    $('#txt_DateOfBirth').attr('max', maxDate.toISOString().split('T')[0]);
+    
+    // Set max date for appointment date to today
+    $('#txt_DateOfAppointment').attr('max', today.toISOString().split('T')[0]);
+    
+    console.log('📅 Birth date picker range set:', minDate.toISOString().split('T')[0], 'to', maxDate.toISOString().split('T')[0]);
+    console.log('📅 Appointment date max set to:', today.toISOString().split('T')[0]);
+
+    // Debug: Check if date validation is in the array
+    console.log('🔍 Validation array length:', validationArray.length);
+    var dateValidation = validationArray.find(function(item) { return item.Element === 'txt_DateOfBirth'; });
+    console.log('🔍 Date validation found:', dateValidation ? 'YES' : 'NO');
+    if (dateValidation) {
+        console.log('🔍 Date validation scheme:', dateValidation.validationScheme);
+    }
+
+    // Initialize asterisks as BLACK first (proper mValidation logic)
+    validationArray.forEach(function(item) {
+        if (item.validationScheme && item.validationScheme.Required) {
+            var asteriskElement = null;
+            
+            // Get the asterisk element safely
+            if (typeof item.spn_A === 'string') {
+                asteriskElement = document.getElementById(item.spn_A);
+            } else if (item.spn_A && item.spn_A.nodeType) {
+                asteriskElement = item.spn_A;
+            }
+            
+            // Set color only if element exists
+            if (asteriskElement) {
+                asteriskElement.style.color = 'black'; // Start with black, turn red on validation failure
+            } else {
+                console.warn('Asterisk element not found for:', item.Element);
+            }
+        }
+    });
+
+    // Add validation events
+    AddValidationEvents(validationArray);
+
+    // Calculate leave balance when appointment date changes
+    $('#txt_DateOfAppointment').on('change', function() {
+        calculateLeaveBalance();
+    });
+
+    // Save button click with enhanced debugging
+    $('#btn_SaveUser').on('click', function() {
+        console.log('🔘 Save button clicked');
+        console.log('📋 Starting validation...');
+        
+        // Debug: Log current form values before validation
+        console.log('📝 Current form values:');
+        console.log('First Name:', $('#txt_FirstName').val());
+        console.log('Father Name:', $('#txt_FatherName').val());
+        console.log('Grand Father Name:', $('#txt_GrandFatherName').val());
+        console.log('Family Name:', $('#txt_FamilyName').val());
+        console.log('Date of Birth:', $('#txt_DateOfBirth').val());
+        console.log('Identity Number:', $('#txt_IdentityNumber').val());
+        console.log('Mobile Number:', $('#txt_MobileNumber').val());
+        console.log('Bank Account:', $('#txt_BankAccountNumber').val());
+        console.log('Appointment Date:', $('#txt_DateOfAppointment').val());
+        console.log('Gender:', $('#ddl_Gender').val());
+        console.log('Nationality:', $('#ddl_Nationality').val());
+        console.log('Email:', $('#txt_Email').val());
+        console.log('Bank ID:', $('#ddl_BankId').val());
+        console.log('Marital Status:', $('#ddl_MaritalStatusId').val());
+        console.log('Education:', $('#txt_EducationalQualification').val());
+        
+        var validationResult = validateAll(validationArray, 1);
+        console.log('✅ Validation result:', validationResult);
+        
+        if (validationResult) {
+            console.log('✅ Validation passed, calling saveUser()');
+            saveUser();
+        } else {
+            console.log('❌ Validation failed, not saving');
+            alert('برجاء تصحيح الأخطاء في النموذج أولاً');
+        }
+    });
+
+    // Clear validation button - use mValidation function with proper asterisk logic
+    $('#btn_ClearValidation').on('click', function() {
+        if (typeof clearValidation === 'function') {
+            clearValidation(validationArray);
+            // After clearing validation, reset asterisks to black for required fields (proper mValidation logic)
+            validationArray.forEach(function(item) {
+                if (item.validationScheme && item.validationScheme.Required) {
+                    var asteriskElement = document.getElementById(item.spn_A);
+                    if (asteriskElement) {
+                        asteriskElement.style.color = 'black'; // Black initially, red on validation failure
+                    }
+                }
+            });
+        } else {
+            // Fallback: manually clear error spans and reset asterisks
+            validationArray.forEach(function(item) {
+                if (item.spn_E) {
+                    if (typeof item.spn_E === 'string') {
+                        $('#' + item.spn_E).text('');
+                    } else {
+                        item.spn_E.innerHTML = '';
+                    }
+                }
+                if (item.spn_A) {
+                    var asteriskElement = document.getElementById(item.spn_A);
+                    if (asteriskElement) {
+                        // Reset asterisk to black for required fields, hide for optional fields
+                        if (item.validationScheme && item.validationScheme.Required) {
+                            asteriskElement.style.color = 'black'; // Black initially, red on validation failure
+                            asteriskElement.style.display = '';
+                        } else {
+                            asteriskElement.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // Reset form button
+    $('#btn_ResetForm').on('click', function() {
+        // Clear all form fields
+        $('#createUserForm')[0].reset();
+        // Clear validation using mValidation function
+        if (typeof clearValidation === 'function') {
+            clearValidation(validationArray);
+            // After clearing validation, reset asterisks to black for required fields
+            validationArray.forEach(function(item) {
+                if (item.validationScheme && item.validationScheme.Required) {
+                    var asteriskElement = document.getElementById(item.spn_A);
+                    if (asteriskElement) {
+                        asteriskElement.style.color = 'black'; // Black initially, red on validation failure
+                    }
+                }
+            });
+        }
+        // Reset leave balance
+        $('#lbl_LeaveBalance').text('0 يوم');
+        // Reset default values
+        $('#radio_Male').prop('checked', true);
+        $('#ddl_Nationality').val('');
+        $('#ddl_BankId').val('');
+        $('#ddl_MaritalStatusId').val('');
+    });
+
+    // Calculate leave balance
+    function calculateLeaveBalance() {
+        var appointmentDate = $('#txt_DateOfAppointment').val();
+        if (appointmentDate) {
+            var appointment = new Date(appointmentDate);
+            var today = new Date();
+            
+            var yearsDiff = today.getFullYear() - appointment.getFullYear();
+            var monthsDiff = today.getMonth() - appointment.getMonth();
+            var daysDiff = today.getDate() - appointment.getDate();
+            
+            // Adjust for partial months
+            if (daysDiff < 0) {
+                monthsDiff--;
+            }
+            if (monthsDiff < 0) {
+                yearsDiff--;
+                monthsDiff += 12;
+            }
+            
+            var totalMonths = yearsDiff * 12 + monthsDiff;
+            var leaveBalance = Math.floor((totalMonths / 12) * 21);
+            
+            $('#lbl_LeaveBalance').text(leaveBalance + ' يوم');
+        } else {
+            $('#lbl_LeaveBalance').text('0 يوم');
+        }
+    }
+
+    // Save user function with enhanced debugging
+    function saveUser() {
+        console.log('🚀 === SAVE USER FUNCTION CALLED ===');
+        
+        var formData = new FormData($('#createUserForm')[0]);
+        
+        // Debug: Log all form data
+        console.log('📝 Form data being sent:');
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        $.ajax({
+            url: '/User/Create',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                console.log('✅ AJAX Success:', response);
+                if (response.success) {
+                    $('#createUserModal').modal('hide');
+                    alert(response.message);
+                    if (window.refreshUsersGrid) {
+                        window.refreshUsersGrid();
+                    } else if (typeof Reload === 'function' && typeof usersGrid !== 'undefined') {
+                        // Fallback to mGrid reload
+                        Reload(usersGrid.searchObject, usersGrid);
+                    }
+                } else {
+                    console.log('❌ Server returned error:', response.message);
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('❌ AJAX Error Details:');
+                console.log('Status:', status);
+                console.log('Error:', error);
+                console.log('Response Text:', xhr.responseText);
+                console.log('Status Code:', xhr.status);
+                
+                try {
+                    var errorResponse = JSON.parse(xhr.responseText);
+                    console.log('Parsed Error Response:', errorResponse);
+                    alert('حدث خطأ أثناء حفظ البيانات: ' + (errorResponse.message || error));
+                } catch (e) {
+                    console.log('Could not parse error response');
+                    alert('حدث خطأ أثناء حفظ البيانات: ' + xhr.status + ' - ' + error);
+                }
+            }
+        });
+    }
+});
+</script>
