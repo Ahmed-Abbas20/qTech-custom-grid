@@ -390,8 +390,12 @@ body {
     font-size: 0.8em;
 }
 
-/* When validation fails, asterisk should be red */
-.fa-asterisk.invalid {
+/* When validation fails, asterisk should be red - override inline styles */
+.fa-asterisk.validation-error {
+    color: red !important;
+}
+
+.fa-asterisk.date-validation-error {
     color: red !important;
 }
 

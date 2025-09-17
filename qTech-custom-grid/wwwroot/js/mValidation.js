@@ -2131,4 +2131,17 @@ function disableValidationById(IDs, validationAry, disabled) {
         }
     }
 }
+function reverse_date_str(date_str) {
+    if ($.trim(date_str) != "") {
+        var date_arr = date_str.split('/');
+        if (date_arr.length == 3) {
+            if ((date_arr[2]).length == 4) {
+                date_str = date_arr[2] + "/" + date_arr[1] + "/" + date_arr[0];
+            } else {
+                date_str = date_arr[0] + "/" + date_arr[1] + "/" + date_arr[2];
+            }
+        }
+    }
+    return date_str;
+}
 

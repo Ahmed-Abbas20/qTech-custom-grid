@@ -109,7 +109,7 @@
                             <span id="spnE_BankAccountNumber" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">اسم البنك <span id="spnA_BankId" class="fa"></span></label>
+                            <label class="form-label">اسم البنك <span id="spnA_BankId" class="fa fa-asterisk"></span></label>
                             <select id="ddl_BankId" name="BankId" class="form-select">
                                 <option value="">اختر البنك</option>
                                 @if (formData?.Banks != null)
@@ -127,7 +127,7 @@
                     <!-- Additional Information -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">الحالة الاجتماعية <span id="spnA_MaritalStatusId" class="fa"></span></label>
+                            <label class="form-label">الحالة الاجتماعية <span id="spnA_MaritalStatusId" class="fa fa-asterisk"></span></label>
                             <select id="ddl_MaritalStatusId" name="MaritalStatusId" class="form-select">
                                 <option value="">اختر الحالة الاجتماعية</option>
                                 @if (formData?.MaritalStatuses != null)
@@ -141,7 +141,7 @@
                             <span id="spnE_MaritalStatusId" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">المؤهل الدراسي <span id="spnA_EducationalQualification" class="fa"></span></label>
+                            <label class="form-label">المؤهل الدراسي <span id="spnA_EducationalQualification" class="fa fa-asterisk"></span></label>
                             <input id="txt_EducationalQualification" name="EducationalQualification" type="text" class="form-control" maxlength="200" />
                             <span id="spnE_EducationalQualification" class="text-danger"></span>
                         </div>
@@ -288,81 +288,38 @@ $(document).ready(function() {
             },
             isBlur: true
         },
-        // Date of Birth validation using Required + vFunction approach
+        // Date of Birth validation using mValidation.js anyDate scheme
         {
             Element: 'txt_DateOfBirth',
             spn_A: 'spnA_DateOfBirth',
             spn_E: 'spnE_DateOfBirth',
-            validationScheme: {
-                vFunction: {
-                    Func: function(value, obj) {
-                        console.log('🚀 === DATE VALIDATION FUNCTION CALLED ===');
-                        console.log('🗓️ تحقق من تاريخ الميلاد:', value);
-                        
-                        // Get value directly from element since mValidation might not handle date inputs correctly
-                        var actualValue = document.getElementById('txt_DateOfBirth').value;
-                        console.log('🔍 Actual element value:', actualValue);
-                        
-                        // Use the actual value instead of the passed value
-                        value = actualValue;
-                        
-                        // Check if empty (Required validation)
-                        if (!value || value.trim() === '') {
-                            console.log('❌ تاريخ الميلاد فارغ');
-                            return 'برجاء ادخال تاريخ الميلاد'; // Return error message instead of false
-                        }
-                        
-                        // Check format YYYY-MM-DD (HTML5 date input format)
-                        var datePattern = /^\d{4}-\d{2}-\d{2}$/;
-                        if (!datePattern.test(value)) {
-                            console.log('❌ صيغة التاريخ غير صحيحة:', value);
-                            return false;
-                        }
-                        
-                        // Parse the date (HTML5 format: YYYY-MM-DD)
-                        var parts = value.split('-');
-                        var year = parseInt(parts[0]);
-                        var month = parseInt(parts[1]);
-                        var day = parseInt(parts[2]);
-                        
-                        // Create date object
-                        var inputDate = new Date(year, month - 1, day);
-                        
-                        // Check if date is valid
-                        if (inputDate.getFullYear() !== year || 
-                            inputDate.getMonth() !== (month - 1) || 
-                            inputDate.getDate() !== day) {
-                            console.log('❌ تاريخ غير صحيح');
-                            return false;
-                        }
-                        
-                        // Check age range (18-65 years)
-                        var today = new Date();
-                        var age = today.getFullYear() - year;
-                        var monthDiff = today.getMonth() - (month - 1);
-                        var dayDiff = today.getDate() - day;
-                        
-                        // Adjust age if birthday hasn't occurred this year
-                        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-                            age--;
-                        }
-                        
-                        console.log('📅 العمر المحسوب:', age);
-                        
-                        if (age < 18 || age > 65) {
-                            console.log('❌ العمر خارج النطاق المسموح (18-65)');
-                            return false;
-                        }
-                        
-                        console.log('✅ تاريخ الميلاد صحيح');
-                        return true;
-                    },
-                    Msg: 'يجب أن يكون العمر بين 18 و 65 سنة'
-                }
-            },
-            Color: 'red',
             isBlur: true,
-            isChange: false
+            validationScheme: {
+                anyDate: {
+                    isRequired: true,
+                    requiredMessage: "برجاء إدخال تاريخ الميلاد",
+                    invalidMessage: "تاريخ الميلاد غير صحيح",
+                    minDate: function() {
+                        // Minimum date for 65 years old
+                        var today = new Date();
+                        var sixtyFiveYearsAgo = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
+                        return sixtyFiveYearsAgo.getFullYear() + '/' +
+                               (sixtyFiveYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                               sixtyFiveYearsAgo.getDate().toString().padStart(2, '0');
+                    }(),
+                    minRangeMessage: "عمر الموظف لا يمكن أن يتجاوز 65 سنة",
+                    maxDate: function() {
+                        // Maximum date for 18 years old
+                        var today = new Date();
+                        var eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                        return eighteenYearsAgo.getFullYear() + '/' +
+                               (eighteenYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                               eighteenYearsAgo.getDate().toString().padStart(2, '0');
+                    }(),
+                    maxRangeMessage: "يجب أن يكون عمر الموظف 18 سنة على الأقل",
+                    isGeorg: true
+                }
+            }
         },
         // Identity Number validation
         {
@@ -466,86 +423,274 @@ $(document).ready(function() {
             },
             isChange: true
         },
-        // Date of Appointment validation using same fix as birth date
+        // Date of Appointment validation using mValidation.js anyDate scheme
         {
             Element: 'txt_DateOfAppointment',
             spn_A: 'spnA_DateOfAppointment',
             spn_E: 'spnE_DateOfAppointment',
-            validationScheme: {
-                vFunction: {
-                    Func: function(value, obj) {
-                        console.log('🚀 === APPOINTMENT DATE VALIDATION FUNCTION CALLED ===');
-                        console.log('🗓️ تحقق من تاريخ التعيين:', value);
-                        
-                        // Get value directly from element since mValidation might not handle date inputs correctly
-                        var actualValue = document.getElementById('txt_DateOfAppointment').value;
-                        console.log('🔍 Actual appointment date value:', actualValue);
-                        
-                        // Use the actual value instead of the passed value
-                        value = actualValue;
-                        
-                        // Check if empty (Required validation)
-                        if (!value || value.trim() === '') {
-                            console.log('❌ تاريخ التعيين فارغ');
-                            return 'برجاء ادخال تاريخ التعيين'; // Return error message
-                        }
-                        
-                        // Check format YYYY-MM-DD (HTML5 date input format)
-                        var datePattern = /^\d{4}-\d{2}-\d{2}$/;
-                        if (!datePattern.test(value)) {
-                            console.log('❌ صيغة تاريخ التعيين غير صحيحة:', value);
-                            return 'صيغة التاريخ غير صحيحة';
-                        }
-                        
-                        // Parse and validate appointment date
-                        var appointmentDate = new Date(value);
-                        var today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        appointmentDate.setHours(0, 0, 0, 0);
-                        
-                        // Check if date is valid
-                        if (isNaN(appointmentDate.getTime())) {
-                            console.log('❌ تاريخ التعيين غير صحيح');
-                            return 'تاريخ التعيين غير صحيح';
-                        }
-                        
-                        // Check if appointment date is not in the future
-                        if (appointmentDate > today) {
-                            console.log('❌ تاريخ التعيين لا يمكن أن يكون في المستقبل');
-                            return 'لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم';
-                        }
-                        
-                        console.log('✅ تاريخ التعيين صحيح');
-                        return true;
-                    }
-                }
-            },
-            Color: 'red',
             isBlur: true,
-            isChange: false
+            validationScheme: {
+                anyDate: {
+                    isRequired: true,
+                    requiredMessage: "برجاء إدخال تاريخ التعيين",
+                    invalidMessage: "تاريخ التعيين غير صحيح",
+                    minDate: '1980/01/01', // Minimum date for appointment
+                    minRangeMessage: "تاريخ التعيين لا يمكن أن يكون قبل 1980",
+                    maxDate: function() {
+                        // Maximum date is today
+                        var today = new Date();
+                        return today.getFullYear() + '/' +
+                               (today.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                               today.getDate().toString().padStart(2, '0');
+                    }(),
+                    maxRangeMessage: "لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم",
+                    isGeorg: true
+                },
+                onSuccess: function() {
+                    // Calculate leave balance when appointment date changes
+                    calculateLeaveBalance();
+                }
+            }
         }
     ];
 
-    // Apply null safety fixes for mValidation
+    // Apply null safety fixes and date format conversion for mValidation
     function applyNullSafetyFixes() {
-        console.log('تطبيق إصلاحات الأمان من القيم الفارغة...');
+        console.log('تطبيق إصلاحات الأمان وتحويل صيغة التاريخ...');
         
         // Store original getValue function
         if (typeof window.originalGetValue === 'undefined' && typeof getValue === 'function') {
             window.originalGetValue = getValue;
             
-            // Override getValue to be null-safe
+            // Override getValue to be null-safe and convert HTML5 date format to mValidation format
             window.getValue = function(element) {
                 var value = window.originalGetValue(element);
-                return value === null || value === undefined ? "" : value;
+                
+                // Handle null/undefined values
+                if (value === null || value === undefined) {
+                    return "";
+                }
+                
+                // Convert HTML5 date format (YYYY-MM-DD) to mValidation format (DD/MM/YYYY) for date inputs
+                var el = (typeof element === 'string') ? document.getElementById(element) : element;
+                if (el && el.type === 'date' && value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    var parts = value.split('-');
+                    var convertedDate = parts[2] + '/' + parts[1] + '/' + parts[0];
+                    console.log('🔄 تحويل التاريخ من', value, 'إلى', convertedDate);
+                    return convertedDate;
+                }
+                
+                return value;
             };
             
-            console.log('✅ تم تطبيق إصلاح getValue بنجاح');
+            console.log('✅ تم تطبيق إصلاح getValue وتحويل صيغة التاريخ بنجاح');
+        }
+        
+        // Override fAnyDate function to fix the undefined length error
+        if (typeof window.originalFAnyDate === 'undefined' && typeof fAnyDate === 'function') {
+            window.originalFAnyDate = fAnyDate;
+            
+            window.fAnyDate = function(value, minDate, maxDate) {
+                console.log('🗓️ fAnyDate override called with:', value, 'min:', minDate, 'max:', maxDate);
+                
+                // Handle null/undefined values that cause the error
+                if (!value || value === null || value === undefined) {
+                    console.log('📅 Empty or null value, returning true');
+                    return true; // Let Required validation handle empty values
+                }
+                
+                // Convert value to string if it's not already
+                value = String(value).trim();
+                
+                if (value === '') {
+                    console.log('📅 Empty string value, returning true');
+                        return true;
+                    }
+                
+                // Try to call original function with safe values
+                try {
+                    var result = window.originalFAnyDate(value, minDate, maxDate);
+                    console.log('📅 fAnyDate result:', result);
+                    return result;
+                } catch (error) {
+                    console.log('❌ fAnyDate error caught:', error.message);
+                    // If original function fails, do basic date validation
+                    var datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+                    if (!datePattern.test(value)) {
+                        console.log('❌ Invalid date format');
+                        return false;
+                    }
+                    console.log('✅ Basic date format valid');
+                    return true;
+                }
+            };
+            
+            console.log('✅ تم تطبيق إصلاح fAnyDate بنجاح');
+        }
+        
+        // Override validateAll to include comprehensive asterisk color management
+        if (typeof window.originalValidateAll === 'undefined' && typeof validateAll === 'function') {
+            window.originalValidateAll = validateAll;
+            
+            window.validateAll = function(elements) {
+                console.log('🔍 validateAll called - including comprehensive validation');
+                
+                // Call original validateAll first
+                var result = window.originalValidateAll(elements);
+                
+                // Force asterisk color updates for ALL fields after validation
+                setTimeout(function() {
+                    console.log('🎨 Forcing asterisk color updates for ALL fields...');
+                    
+                    // Check all error spans and update corresponding asterisks
+                    var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
+                    for (var i = 0; i < allErrorSpans.length; i++) {
+                        var errorSpan = allErrorSpans[i];
+                        var fieldName = errorSpan.id.replace('spnE_', '');
+                        var asteriskId = 'spnA_' + fieldName;
+                        var asterisk = document.getElementById(asteriskId);
+                        
+                        if (asterisk) {
+                            var hasError = errorSpan.textContent && errorSpan.textContent.trim() !== '';
+                            var isVisible = errorSpan.style.display !== 'none' && errorSpan.offsetParent !== null;
+                            
+                            if (hasError && isVisible) {
+                                asterisk.style.color = 'red';
+                                console.log('❌ Field ' + fieldName + ' - asterisk RED (has error)');
+                            } else {
+                                asterisk.style.color = 'black';
+                                console.log('✅ Field ' + fieldName + ' - asterisk BLACK (no error)');
+                            }
+                        }
+                    }
+                    
+                    // Also run date field validation specifically
+                    if (typeof window.validateDateField === 'function') {
+                        console.log('📅 Running date field validation from validateAll...');
+                        window.validateDateField('txt_DateOfBirth');
+                        window.validateDateField('txt_DateOfAppointment');
+                    }
+                }, 50);
+                
+                return result;
+            };
+            
+            console.log('✅ validateAll override applied with comprehensive asterisk control');
         }
     }
     
     // Apply null safety fixes first
     applyNullSafetyFixes();
+    
+    // Add direct date validation for asterisk color control
+    $(document).ready(function() {
+        console.log('🚀 Setting up date asterisk color control...');
+        
+         // Function to validate date and control asterisk color (make it global)
+         window.validateDateField = function(inputId) {
+            var input = document.getElementById(inputId);
+            var asteriskId = 'spnA_' + inputId.replace('txt_', '');
+            var asterisk = document.getElementById(asteriskId);
+            var errorSpanId = 'spnE_' + inputId.replace('txt_', '');
+            var errorSpan = document.getElementById(errorSpanId);
+            
+            if (!input || !asterisk) return true;
+            
+            var value = input.value;
+            var isValid = true;
+            var errorMessage = '';
+            
+            // Check if empty (required)
+            if (!value || value.trim() === '') {
+                isValid = false;
+                errorMessage = inputId === 'txt_DateOfBirth' ? 'برجاء إدخال تاريخ الميلاد' : 'برجاء إدخال تاريخ التعيين';
+            } else {
+                var inputDate = new Date(value);
+                var today = new Date();
+                
+                if (inputId === 'txt_DateOfBirth') {
+                    // Age validation (18-65 years)
+                    var age = today.getFullYear() - inputDate.getFullYear();
+                    var monthDiff = today.getMonth() - inputDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < inputDate.getDate())) {
+                        age--;
+                    }
+                    
+                    if (age < 18 || age > 65) {
+                        isValid = false;
+                        errorMessage = 'يجب أن يكون العمر بين 18 و 65 سنة (العمر الحالي: ' + age + ' سنة)';
+                    }
+                } else if (inputId === 'txt_DateOfAppointment') {
+                    // Appointment date validation
+                    var minDate = new Date('1980-01-01');
+                    inputDate.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
+                    
+                    if (inputDate < minDate) {
+                        isValid = false;
+                        errorMessage = 'تاريخ التعيين لا يمكن أن يكون قبل 1980';
+                    } else if (inputDate > today) {
+                        isValid = false;
+                        errorMessage = 'لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم';
+                    }
+                }
+            }
+            
+             // Update asterisk color using CSS classes and force style override
+             if (isValid) {
+                 asterisk.classList.remove('validation-error', 'date-validation-error');
+                 asterisk.style.color = 'black'; // Force black for valid
+                 if (errorSpan) errorSpan.textContent = '';
+                 console.log('✅ ' + inputId + ' valid - asterisk BLACK');
+             } else {
+                 asterisk.classList.add('validation-error', 'date-validation-error');
+                 asterisk.style.color = 'red'; // Force red for invalid
+                 if (errorSpan) errorSpan.textContent = errorMessage;
+                 console.log('❌ ' + inputId + ' invalid - asterisk RED:', errorMessage);
+             }
+            
+            return isValid;
+        }
+        
+         // Attach validation to date inputs
+         $('#txt_DateOfBirth, #txt_DateOfAppointment').on('blur change input', function() {
+             var inputId = this.id;
+             console.log('📅 Date input event:', inputId, 'Value:', this.value);
+             setTimeout(function() {
+                 window.validateDateField(inputId);
+             }, 50);
+         });
+         
+         // Function to update ALL asterisk colors based on current validation state
+         window.updateAllAsteriskColors = function() {
+             console.log('🎨 Updating ALL asterisk colors based on validation state...');
+             
+             var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
+             for (var i = 0; i < allErrorSpans.length; i++) {
+                 var errorSpan = allErrorSpans[i];
+                 var fieldName = errorSpan.id.replace('spnE_', '');
+                 var asteriskId = 'spnA_' + fieldName;
+                 var asterisk = document.getElementById(asteriskId);
+                 
+                 if (asterisk) {
+                     var hasError = errorSpan.textContent && errorSpan.textContent.trim() !== '';
+                     var isVisible = errorSpan.style.display !== 'none' && errorSpan.offsetParent !== null;
+                     
+                     if (hasError && isVisible) {
+                         asterisk.style.color = 'red';
+                         console.log('❌ Field ' + fieldName + ' - asterisk RED (has error)');
+                     } else {
+                         asterisk.style.color = 'black';
+                         console.log('✅ Field ' + fieldName + ' - asterisk BLACK (no error)');
+                     }
+                 }
+             }
+         };
+         
+         // Note: Save button validation is handled in the main btn_SaveUser click handler below
+         
+         console.log('✅ Date asterisk color control set up');
+    });
     
     // HTML5 date input handles formatting automatically
     // Set dynamic min/max dates for age range (18-65 years)
@@ -622,16 +767,117 @@ $(document).ready(function() {
         console.log('Marital Status:', $('#ddl_MaritalStatusId').val());
         console.log('Education:', $('#txt_EducationalQualification').val());
         
-        var validationResult = validateAll(validationArray, 1);
-        console.log('✅ Validation result:', validationResult);
+        // Force validation of ALL fields individually first
+        console.log('🔄 Running individual field validation...');
         
-        if (validationResult) {
-            console.log('✅ Validation passed, calling saveUser()');
-            saveUser();
-        } else {
-            console.log('❌ Validation failed, not saving');
-            alert('برجاء تصحيح الأخطاء في النموذج أولاً');
+        // Trigger validation for each field individually to ensure error messages appear
+        var allFields = [
+            'txt_FirstName', 'txt_FatherName', 'txt_GrandFatherName', 'txt_FamilyName',
+            'txt_IdentityNumber', 'txt_MobileNumber', 'txt_BankAccountNumber', 'txt_Email',
+            'txt_EducationalQualification', 'ddl_Gender', 'ddl_Nationality', 'ddl_BankId', 'ddl_MaritalStatusId'
+        ];
+        
+        // Validate each field individually to trigger error messages
+        for (var i = 0; i < allFields.length; i++) {
+            var fieldId = allFields[i];
+            var element = document.getElementById(fieldId);
+            if (element) {
+                // Trigger multiple events to ensure mValidation activates
+                $(element).trigger('blur');
+                $(element).trigger('focusout');
+                $(element).trigger('change');
+                console.log('🔍 Triggered validation for:', fieldId);
+                
+                // Also manually check if field is empty and force error display
+                var value = $(element).val();
+                var asteriskId = 'spnA_' + fieldId.replace('txt_', '').replace('ddl_', '');
+                var errorSpanId = 'spnE_' + fieldId.replace('txt_', '').replace('ddl_', '');
+                
+                if (!value || value.trim() === '') {
+                    // Force error message and red asterisk for empty required fields
+                    var errorSpan = document.getElementById(errorSpanId);
+                    var asterisk = document.getElementById(asteriskId);
+                    
+                    if (errorSpan && !errorSpan.textContent.trim()) {
+                        var fieldName = fieldId.replace('txt_', '').replace('ddl_', '');
+                        var arabicFieldNames = {
+                            'FirstName': 'الاسم الأول',
+                            'FatherName': 'اسم الأب', 
+                            'GrandFatherName': 'اسم الجد',
+                            'FamilyName': 'لقب العائلة',
+                            'IdentityNumber': 'رقم الهوية',
+                            'MobileNumber': 'رقم الجوال',
+                            'BankAccountNumber': 'رقم الحساب البنكي',
+                            'Email': 'البريد الإلكتروني',
+                            'EducationalQualification': 'المؤهل الدراسي',
+                            'Gender': 'الجنس',
+                            'Nationality': 'الجنسية',
+                            'BankId': 'اسم البنك',
+                            'MaritalStatusId': 'الحالة الاجتماعية'
+                        };
+                        
+                        var arabicName = arabicFieldNames[fieldName] || fieldName;
+                        errorSpan.textContent = 'برجاء إدخال ' + arabicName;
+                        console.log('🚨 Forced error message for empty field:', fieldId);
+                    }
+                    
+                    if (asterisk) {
+                        asterisk.style.color = 'red';
+                        console.log('🔴 Forced red asterisk for:', fieldId);
+                    }
+                }
+            }
         }
+        
+        // Now run the comprehensive validation
+        var validationResult = validateAll(validationArray, 1);
+        console.log('✅ mValidation result:', validationResult);
+        
+        // Force validation of date fields and update all asterisk colors
+        setTimeout(function() {
+            console.log('🔄 Running comprehensive field validation...');
+            
+            // Validate date fields specifically
+            if (typeof window.validateDateField === 'function') {
+                window.validateDateField('txt_DateOfBirth');
+                window.validateDateField('txt_DateOfAppointment');
+            }
+            
+            // Update ALL asterisk colors based on current validation state
+            if (typeof window.updateAllAsteriskColors === 'function') {
+                window.updateAllAsteriskColors();
+            }
+            
+            // Check if we should proceed with saving
+            var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
+            var hasAnyErrors = false;
+            var errorCount = 0;
+            
+            for (var i = 0; i < allErrorSpans.length; i++) {
+                var errorSpan = allErrorSpans[i];
+                if (errorSpan.textContent && errorSpan.textContent.trim() !== '') {
+                    hasAnyErrors = true;
+                    errorCount++;
+                    console.log('❌ Found error in field:', errorSpan.id, 'Error:', errorSpan.textContent);
+                }
+            }
+            
+            console.log('📊 Total errors found:', errorCount);
+            
+            if (!hasAnyErrors && validationResult) {
+                console.log('✅ All validation passed, calling saveUser()');
+                saveUser();
+            } else {
+                console.log('❌ Validation failed - not saving');
+                console.log('mValidation result:', validationResult);
+                console.log('Has field errors:', hasAnyErrors);
+                
+                // Show alert to user
+                alert('برجاء تصحيح الأخطاء في النموذج أولاً');
+            }
+        }, 200);
+        
+        // Don't proceed immediately - wait for comprehensive validation
     });
 
     // Clear validation button - use mValidation function with proper asterisk logic
