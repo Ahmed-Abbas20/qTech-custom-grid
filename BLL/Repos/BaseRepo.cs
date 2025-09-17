@@ -5,28 +5,17 @@ using System.Linq.Expressions;
 
 namespace BLL.Repos
 {
-    /// <summary>
-    /// Generic base repository implementation for common CRUD operations
-    /// Implements standard JSON-based operations for all entities
-    /// </summary>
-    /// <typeparam name="T">Entity type</typeparam>
+ 
     public class BaseRepo<T> : IBaseRepo<T> where T : class
     {
         protected readonly JsonDataService _dataService;
 
-        /// <summary>
-        /// Constructor with JSON data service injection
-        /// </summary>
-        /// <param name="dataService">JSON data service</param>
+
         public BaseRepo(JsonDataService dataService)
         {
             _dataService = dataService;
         }
 
-        /// <summary>
-        /// Get all entities asynchronously
-        /// </summary>
-        /// <returns>Collection of all entities</returns>
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             var data = await _dataService.ReadDataAsync();
@@ -41,44 +30,28 @@ namespace BLL.Repos
             return new List<T>();
         }
 
-        /// <summary>
-        /// Get entity by ID asynchronously
-        /// </summary>
-        /// <param name="id">Entity ID</param>
-        /// <returns>Entity if found, null otherwise</returns>
+
         public virtual async Task<T?> GetByIdAsync(int id)
         {
             var entities = await GetAllAsync();
             return entities.FirstOrDefault(e => GetEntityId(e) == id);
         }
 
-        /// <summary>
-        /// Find entities by condition asynchronously
-        /// </summary>
-        /// <param name="predicate">Search condition</param>
-        /// <returns>Collection of matching entities</returns>
+
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
             var entities = await GetAllAsync();
             return entities.Where(predicate.Compile());
         }
 
-        /// <summary>
-        /// Get first entity matching condition asynchronously
-        /// </summary>
-        /// <param name="predicate">Search condition</param>
-        /// <returns>First matching entity or null</returns>
+
         public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         {
             var entities = await GetAllAsync();
             return entities.FirstOrDefault(predicate.Compile());
         }
 
-        /// <summary>
-        /// Add new entity asynchronously
-        /// </summary>
-        /// <param name="entity">Entity to add</param>
-        /// <returns>Added entity</returns>
+
         public virtual async Task<T> AddAsync(T entity)
         {
             var data = await _dataService.ReadDataAsync();
@@ -107,10 +80,7 @@ namespace BLL.Repos
             return entity;
         }
 
-        /// <summary>
-        /// Add multiple entities asynchronously
-        /// </summary>
-        /// <param name="entities">Entities to add</param>
+
         public virtual async Task AddRangeAsync(IEnumerable<T> entities)
         {
             foreach (var entity in entities)
@@ -119,19 +89,12 @@ namespace BLL.Repos
             }
         }
 
-        /// <summary>
-        /// Update existing entity
-        /// </summary>
-        /// <param name="entity">Entity to update</param>
         public virtual async void Update(T entity)
         {
             await UpdateAsync(entity);
         }
 
-        /// <summary>
-        /// Update existing entity asynchronously
-        /// </summary>
-        /// <param name="entity">Entity to update</param>
+
         public virtual async Task UpdateAsync(T entity)
         {
             var data = await _dataService.ReadDataAsync();
@@ -172,10 +135,6 @@ namespace BLL.Repos
             await _dataService.WriteDataAsync(data);
         }
 
-        /// <summary>
-        /// Update multiple entities
-        /// </summary>
-        /// <param name="entities">Entities to update</param>
         public virtual async void UpdateRange(IEnumerable<T> entities)
         {
             foreach (var entity in entities)
@@ -184,20 +143,13 @@ namespace BLL.Repos
             }
         }
 
-        /// <summary>
-        /// Delete entity
-        /// </summary>
-        /// <param name="entity">Entity to delete</param>
         public virtual async void Delete(T entity)
         {
             var entityId = GetEntityId(entity);
             await DeleteByIdAsync(entityId);
         }
 
-        /// <summary>
-        /// Delete entity by ID
-        /// </summary>
-        /// <param name="id">Entity ID to delete</param>
+
         public virtual async Task DeleteByIdAsync(int id)
         {
             var data = await _dataService.ReadDataAsync();
@@ -231,10 +183,7 @@ namespace BLL.Repos
             }
         }
 
-        /// <summary>
-        /// Delete multiple entities
-        /// </summary>
-        /// <param name="entities">Entities to delete</param>
+
         public virtual async void DeleteRange(IEnumerable<T> entities)
         {
             foreach (var entity in entities)
@@ -244,35 +193,21 @@ namespace BLL.Repos
             }
         }
 
-        /// <summary>
-        /// Check if entity exists by condition
-        /// </summary>
-        /// <param name="predicate">Search condition</param>
-        /// <returns>True if exists, false otherwise</returns>
+
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             var entities = await GetAllAsync();
             return entities.Any(predicate.Compile());
         }
 
-        /// <summary>
-        /// Count entities by condition
-        /// </summary>
-        /// <param name="predicate">Search condition</param>
-        /// <returns>Count of matching entities</returns>
+
         public virtual async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
         {
             var entities = await GetAllAsync();
             return entities.Count(predicate.Compile());
         }
 
-        /// <summary>
-        /// Get entities with pagination
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-based)</param>
-        /// <param name="pageSize">Page size</param>
-        /// <param name="predicate">Optional filter condition</param>
-        /// <returns>Paged collection of entities</returns>
+  
         public virtual async Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null)
         {
             var entities = await GetAllAsync();
@@ -289,11 +224,7 @@ namespace BLL.Repos
                 .ToList();
         }
 
-        /// <summary>
-        /// Get entity ID using reflection
-        /// </summary>
-        /// <param name="entity">Entity to get ID from</param>
-        /// <returns>Entity ID</returns>
+
         private int GetEntityId(T entity)
         {
             var idProperty = typeof(T).GetProperty("Id");

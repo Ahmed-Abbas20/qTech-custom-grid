@@ -187,20 +187,8 @@
                 },
                 onGridComplete: function(utility) {
                     console.log('Grid loaded successfully');
-                    // Initialize mSingleCheck for checkboxes
-                    if (window.mScript && window.mScript.mSingleCheck) {
-                        mScript.mSingleCheck({
-                            Name: 'cb_Select',
-                            OnCheck: function(args) {
-                                updateSelectedUsers();
-                                updateActionButtons();
-                            },
-                            OnUnCheck: function(args) {
-                                updateSelectedUsers();
-                                updateActionButtons();
-                            }
-                        });
-                    }
+                    // Initialize multiple checkbox selection (not mSingleCheck - that's for single selection)
+                    initializeMultipleCheckboxes();
                 },
                 onRowComplete: function(row) {
                     // Row completion handled by mSingleCheck
