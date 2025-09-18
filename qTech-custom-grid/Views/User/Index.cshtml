@@ -187,48 +187,38 @@
                 },
                 onGridComplete: function(utility) {
                     console.log('Grid loaded successfully');
-                    
-                    // Ensure mSingleCheck works properly after pagination
-                    setTimeout(function() {
-                        console.log('🔄 Initializing mSingleCheck for SINGLE selection only...');
-                        
-                        // Clear any existing click handlers first
-                        var allCheckboxes = document.querySelectorAll('input[name="cb_Select"]');
-                        for (var i = 0; i < allCheckboxes.length; i++) {
-                            allCheckboxes[i].onclick = null;
-                            allCheckboxes[i].removeAttribute('checkedFlag');
-                            allCheckboxes[i].checked = false;
-                        }
-                        console.log('📋 Cleared existing handlers for ' + allCheckboxes.length + ' checkboxes');
-                        
-                        // Apply mSingleCheck for SINGLE selection (exactly like radio buttons)
-                        if (window.mScript && window.mScript.mSingleCheck) {
-                            mScript.mSingleCheck({
-                                Name: 'cb_Select',
-                                OnCheck: function(args) {
-                                    console.log('✅ mSingleCheck - SINGLE checkbox selected:', args.Element.id);
-                                    updateSelectedUsers();
-                                    updateActionButtons();
-                                },
-                                OnUnCheck: function(args) {
-                                    console.log('❌ mSingleCheck - Checkbox unselected:', args.Element.id);
-                                    updateSelectedUsers();
-                                    updateActionButtons();
-                                }
-                            });
-                            console.log('✅ mSingleCheck applied - ONLY ONE checkbox can be selected (like radio button)');
-                        } else {
-                            console.error('❌ mScript.mSingleCheck not available');
-                        }
-                    }, 100);
+                    // Grid completion handled by extension scripts
                 },
                 onRowComplete: function(row) {
                     // Row completion handled by mSingleCheck
                 }
             };
 
-            // Initialize the grid
+            // Configure single check behavior for the grid
+            usersGrid.singleCheckConfig = {
+                Name: 'cb_Select',
+                OnCheck: function(args) {
+                    console.log('✅ User selected:', args.Element.id);
+                    updateSelectedUsers();
+                    updateActionButtons();
+                },
+                OnUnCheck: function(args) {
+                    console.log('❌ User unselected:', args.Element.id);
+                    updateSelectedUsers();
+                    updateActionButtons();
+                }
+            };
+            
+            // Initialize the grid with extension support
             mGridInitialize(usersGrid);
+            
+            // Initialize auto-monitor if available
+            if (window.mSingleCheckAutoMonitor) {
+                mSingleCheckAutoMonitor.init({
+                    checkboxName: 'cb_Select',
+                    singleCheckConfig: usersGrid.singleCheckConfig
+                });
+            }
         }
 
         // Add missing functions for grid tooltips

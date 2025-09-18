@@ -109,7 +109,7 @@
                             <span id="spnE_BankAccountNumber" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">اسم البنك <span id="spnA_BankId" class="fa fa-asterisk"></span></label>
+                            <label class="form-label">اسم البنك <span class="text-muted">(اختياري)</span></label>
                             <select id="ddl_BankId" name="BankId" class="form-select">
                                 <option value="">اختر البنك</option>
                                 @if (formData?.Banks != null)
@@ -120,14 +120,13 @@
                                     }
                                 }
                             </select>
-                            <span id="spnE_BankId" class="text-danger"></span>
                         </div>
                     </div>
 
                     <!-- Additional Information -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">الحالة الاجتماعية <span id="spnA_MaritalStatusId" class="fa fa-asterisk"></span></label>
+                            <label class="form-label">الحالة الاجتماعية <span class="text-muted">(اختياري)</span></label>
                             <select id="ddl_MaritalStatusId" name="MaritalStatusId" class="form-select">
                                 <option value="">اختر الحالة الاجتماعية</option>
                                 @if (formData?.MaritalStatuses != null)
@@ -138,12 +137,10 @@
                                     }
                                 }
                             </select>
-                            <span id="spnE_MaritalStatusId" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">المؤهل الدراسي <span id="spnA_EducationalQualification" class="fa fa-asterisk"></span></label>
+                            <label class="form-label">المؤهل الدراسي <span class="text-muted">(اختياري)</span></label>
                             <input id="txt_EducationalQualification" name="EducationalQualification" type="text" class="form-control" maxlength="200" />
-                            <span id="spnE_EducationalQualification" class="text-danger"></span>
                         </div>
                     </div>
 
@@ -486,46 +483,169 @@ $(document).ready(function() {
             console.log('✅ تم تطبيق إصلاح getValue وتحويل صيغة التاريخ بنجاح');
         }
         
-        // Override fAnyDate function to fix the undefined length error
-        if (typeof window.originalFAnyDate === 'undefined' && typeof fAnyDate === 'function') {
-            window.originalFAnyDate = fAnyDate;
+        // Completely replace fAnyDate function to fix the undefined length error
+        if (typeof fAnyDate === 'function') {
+            // Store original if not already stored
+            if (typeof window.originalFAnyDate === 'undefined') {
+                window.originalFAnyDate = fAnyDate;
+            }
             
-            window.fAnyDate = function(value, minDate, maxDate) {
-                console.log('🗓️ fAnyDate override called with:', value, 'min:', minDate, 'max:', maxDate);
+            // Force replace the global fAnyDate function
+            console.log('🔄 Forcefully replacing global fAnyDate function...');
+            
+            window.fAnyDate = function(obj, fireValidation) {
+                console.log('🗓️ fAnyDate override called with obj:', obj, 'fireValidation:', fireValidation);
                 
-                // Handle null/undefined values that cause the error
-                if (!value || value === null || value === undefined) {
-                    console.log('📅 Empty or null value, returning true');
+                // Handle null/undefined obj or textBox
+                if (!obj || !obj.textBox) {
+                    console.log('❌ Invalid obj or textBox, returning false');
+                    return false;
+                }
+                
+                // Get the raw value from textBox
+                var rawValue = obj.textBox.value;
+                console.log('📅 Raw textBox.value:', rawValue, 'Type:', typeof rawValue);
+                
+                // Handle null/undefined value that causes the error
+                if (!rawValue || rawValue === null || rawValue === undefined) {
+                    console.log('📅 Empty or null textBox.value, returning true');
                     return true; // Let Required validation handle empty values
                 }
                 
-                // Convert value to string if it's not already
-                value = String(value).trim();
+                // Convert value to string if it's not already and trim
+                var dateVal = String(rawValue).trim();
                 
-                if (value === '') {
+                if (dateVal === '') {
                     console.log('📅 Empty string value, returning true');
-                        return true;
-                    }
+                    return true;
+                }
                 
-                // Try to call original function with safe values
+                console.log('📅 Processing date value:', dateVal);
+                
+                // Check if this is an HTML5 date format and convert it directly
+                if (dateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    console.log('📅 HTML5 date format detected, converting...');
+                    var parts = dateVal.split('-');
+                    dateVal = parts[2] + '/' + parts[1] + '/' + parts[0]; // Convert to DD/MM/YYYY
+                    console.log('📅 Converted to:', dateVal);
+                }
+                
+                // Validate date format and structure
+                var dateAry = dateVal.split("/");
+                console.log('📅 Date array after split:', dateAry, 'Length:', dateAry.length);
+                
+                // Check if we have exactly 3 parts (DD/MM/YYYY)
+                if (!dateAry || dateAry.length !== 3) {
+                    console.log('❌ Invalid date format - should be DD/MM/YYYY, got:', dateAry);
+                    return false;
+                }
+                
+                // Check if all parts exist and are not empty
+                if (!dateAry[0] || !dateAry[1] || !dateAry[2]) {
+                    console.log('❌ Invalid date format - missing date parts:', 'Part0:', dateAry[0], 'Part1:', dateAry[1], 'Part2:', dateAry[2]);
+                    return false;
+                }
+                
+                // Check if year part has proper length (should be 4 digits)
+                if (dateAry[2].length !== 4) {
+                    console.log('❌ Invalid year format - should be 4 digits, got:', dateAry[2], 'Length:', dateAry[2].length);
+                    return false;
+                }
+                
+                // Skip the problematic original function and do our own validation
+                console.log('📅 Performing custom date validation instead of calling original function');
+                
                 try {
-                    var result = window.originalFAnyDate(value, minDate, maxDate);
-                    console.log('📅 fAnyDate result:', result);
-                    return result;
-                } catch (error) {
-                    console.log('❌ fAnyDate error caught:', error.message);
-                    // If original function fails, do basic date validation
-                    var datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
-                    if (!datePattern.test(value)) {
-                        console.log('❌ Invalid date format');
+                    var day = parseInt(dateAry[0]);
+                    var month = parseInt(dateAry[1]);
+                    var year = parseInt(dateAry[2]);
+                    
+                    console.log('📅 Parsed date components - Day:', day, 'Month:', month, 'Year:', year);
+                    
+                    // Basic range checks
+                    if (day < 1 || day > 31) {
+                        console.log('❌ Day out of range (1-31):', day);
                         return false;
                     }
-                    console.log('✅ Basic date format valid');
-                    return true;
+                    if (month < 1 || month > 12) {
+                        console.log('❌ Month out of range (1-12):', month);
+                        return false;
+                    }
+                    if (year < 1900 || year > 2100) {
+                        console.log('❌ Year out of range (1900-2100):', year);
+                        return false;
+                    }
+                    
+                    // Try to create a valid date object to verify the date is real
+                    var testDate = new Date(year, month - 1, day);
+                    if (testDate.getFullYear() === year && testDate.getMonth() === (month - 1) && testDate.getDate() === day) {
+                        console.log('✅ Date validation passed - valid date:', day + '/' + month + '/' + year);
+                        
+                        // Additional validation for birth date (age between 18-65)
+                        if (obj.textBox && obj.textBox.id === 'txt_DateOfBirth') {
+                            var today = new Date();
+                            var age = today.getFullYear() - year;
+                            var monthDiff = today.getMonth() - (month - 1);
+                            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < day)) {
+                                age--;
+                            }
+                            
+                            if (age < 18 || age > 65) {
+                                console.log('❌ Age validation failed - Age:', age, '(must be 18-65)');
+                                return false;
+                            }
+                            console.log('✅ Age validation passed - Age:', age);
+                        }
+                        
+                        // Additional validation for appointment date (not in future)
+                        if (obj.textBox && obj.textBox.id === 'txt_DateOfAppointment') {
+                            var appointmentDate = new Date(year, month - 1, day);
+                            var today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            appointmentDate.setHours(0, 0, 0, 0);
+                            
+                            if (appointmentDate > today) {
+                                console.log('❌ Appointment date validation failed - cannot be in future');
+                                return false;
+                            }
+                            
+                            var minDate = new Date(1980, 0, 1);
+                            if (appointmentDate < minDate) {
+                                console.log('❌ Appointment date validation failed - cannot be before 1980');
+                                return false;
+                            }
+                            console.log('✅ Appointment date validation passed');
+                        }
+                        
+                        return true;
+                    } else {
+                        console.log('❌ Invalid date combination - Date object mismatch');
+                        return false;
+                    }
+                } catch (validationError) {
+                    console.log('❌ Date validation error:', validationError.message);
+                    return false;
                 }
             };
             
-            console.log('✅ تم تطبيق إصلاح fAnyDate بنجاح');
+            // Also assign to global scope to ensure it's replaced everywhere
+            fAnyDate = window.fAnyDate;
+            
+            console.log('✅ تم تطبيق إصلاح fAnyDate بنجاح - Function replaced globally');
+            
+            // Add a test function to verify our override is working
+            window.testFAnyDate = function(dateValue) {
+                console.log('🧪 Testing fAnyDate with value:', dateValue);
+                var testObj = {
+                    textBox: { value: dateValue, id: 'test' },
+                    isRequired: true
+                };
+                var result = window.fAnyDate(testObj, true);
+                console.log('🧪 Test result:', result);
+                return result;
+            };
+            
+            console.log('🧪 Test function added: window.testFAnyDate("06/09/2007")');
         }
         
         // Override validateAll to include comprehensive asterisk color management
@@ -763,18 +883,19 @@ $(document).ready(function() {
         console.log('Gender:', $('#ddl_Gender').val());
         console.log('Nationality:', $('#ddl_Nationality').val());
         console.log('Email:', $('#txt_Email').val());
-        console.log('Bank ID:', $('#ddl_BankId').val());
-        console.log('Marital Status:', $('#ddl_MaritalStatusId').val());
-        console.log('Education:', $('#txt_EducationalQualification').val());
+        console.log('Bank ID (optional):', $('#ddl_BankId').val());
+        console.log('Marital Status (optional):', $('#ddl_MaritalStatusId').val());
+        console.log('Education (optional):', $('#txt_EducationalQualification').val());
         
         // Force validation of ALL fields individually first
         console.log('🔄 Running individual field validation...');
         
         // Trigger validation for each field individually to ensure error messages appear
+        // Note: BankId, MaritalStatusId, and EducationalQualification are now OPTIONAL fields
         var allFields = [
             'txt_FirstName', 'txt_FatherName', 'txt_GrandFatherName', 'txt_FamilyName',
             'txt_IdentityNumber', 'txt_MobileNumber', 'txt_BankAccountNumber', 'txt_Email',
-            'txt_EducationalQualification', 'ddl_Gender', 'ddl_Nationality', 'ddl_BankId', 'ddl_MaritalStatusId'
+            'ddl_Gender', 'ddl_Nationality'
         ];
         
         // Validate each field individually to trigger error messages
@@ -800,6 +921,7 @@ $(document).ready(function() {
                     
                     if (errorSpan && !errorSpan.textContent.trim()) {
                         var fieldName = fieldId.replace('txt_', '').replace('ddl_', '');
+                        // Only required fields need error messages
                         var arabicFieldNames = {
                             'FirstName': 'الاسم الأول',
                             'FatherName': 'اسم الأب', 
@@ -809,11 +931,8 @@ $(document).ready(function() {
                             'MobileNumber': 'رقم الجوال',
                             'BankAccountNumber': 'رقم الحساب البنكي',
                             'Email': 'البريد الإلكتروني',
-                            'EducationalQualification': 'المؤهل الدراسي',
                             'Gender': 'الجنس',
-                            'Nationality': 'الجنسية',
-                            'BankId': 'اسم البنك',
-                            'MaritalStatusId': 'الحالة الاجتماعية'
+                            'Nationality': 'الجنسية'
                         };
                         
                         var arabicName = arabicFieldNames[fieldName] || fieldName;
@@ -866,15 +985,15 @@ $(document).ready(function() {
             
             if (!hasAnyErrors && validationResult) {
                 console.log('✅ All validation passed, calling saveUser()');
-                saveUser();
-            } else {
+            saveUser();
+        } else {
                 console.log('❌ Validation failed - not saving');
                 console.log('mValidation result:', validationResult);
                 console.log('Has field errors:', hasAnyErrors);
                 
                 // Show alert to user
-                alert('برجاء تصحيح الأخطاء في النموذج أولاً');
-            }
+            alert('برجاء تصحيح الأخطاء في النموذج أولاً');
+        }
         }, 200);
         
         // Don't proceed immediately - wait for comprehensive validation
@@ -941,8 +1060,10 @@ $(document).ready(function() {
         // Reset default values
         $('#radio_Male').prop('checked', true);
         $('#ddl_Nationality').val('');
+        // Reset optional fields
         $('#ddl_BankId').val('');
         $('#ddl_MaritalStatusId').val('');
+        $('#txt_EducationalQualification').val('');
     });
 
     // Calculate leave balance
