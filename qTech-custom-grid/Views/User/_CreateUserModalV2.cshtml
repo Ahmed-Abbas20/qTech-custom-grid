@@ -51,6 +51,8 @@
                             <input id="txt_DateOfBirth" name="DateOfBirth" type="date" class="form-control" 
                                    title="يجب أن يكون العمر بين 18 و 65 سنة" 
                                    min="1959-01-01" max="2006-12-31" />
+                            <!-- Hidden field for mValidation (DD/MM/YYYY) -->
+                            <input id="txt_DateOfBirth_mval" type="text" class="form-control" style="display:none;" />
                             <span id="spnE_DateOfBirth" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
@@ -151,6 +153,8 @@
                             <input id="txt_DateOfAppointment" name="DateOfAppointment" type="date" class="form-control" 
                                    title="تاريخ التعيين لا يمكن أن يكون في المستقبل"
                                    min="1980-01-01" />
+                            <!-- Hidden field for mValidation (DD/MM/YYYY) -->
+                            <input id="txt_DateOfAppointment_mval" type="text" class="form-control" style="display:none;" />
                             <span id="spnE_DateOfAppointment" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
@@ -285,9 +289,9 @@ $(document).ready(function() {
             },
             isBlur: true
         },
-        // Date of Birth validation using mValidation.js anyDate scheme
+        // Date of Birth validation using mValidation.js anyDate scheme (bind to hidden text field)
         {
-            Element: 'txt_DateOfBirth',
+            Element: 'txt_DateOfBirth_mval',
             spn_A: 'spnA_DateOfBirth',
             spn_E: 'spnE_DateOfBirth',
             isBlur: true,
@@ -420,9 +424,9 @@ $(document).ready(function() {
             },
             isChange: true
         },
-        // Date of Appointment validation using mValidation.js anyDate scheme
+        // Date of Appointment validation using mValidation.js anyDate scheme (bind to hidden text field)
         {
-            Element: 'txt_DateOfAppointment',
+            Element: 'txt_DateOfAppointment_mval',
             spn_A: 'spnA_DateOfAppointment',
             spn_E: 'spnE_DateOfAppointment',
             isBlur: true,
@@ -483,170 +487,7 @@ $(document).ready(function() {
             console.log('✅ تم تطبيق إصلاح getValue وتحويل صيغة التاريخ بنجاح');
         }
         
-        // Completely replace fAnyDate function to fix the undefined length error
-        if (typeof fAnyDate === 'function') {
-            // Store original if not already stored
-            if (typeof window.originalFAnyDate === 'undefined') {
-                window.originalFAnyDate = fAnyDate;
-            }
-            
-            // Force replace the global fAnyDate function
-            console.log('🔄 Forcefully replacing global fAnyDate function...');
-            
-            window.fAnyDate = function(obj, fireValidation) {
-                console.log('🗓️ fAnyDate override called with obj:', obj, 'fireValidation:', fireValidation);
-                
-                // Handle null/undefined obj or textBox
-                if (!obj || !obj.textBox) {
-                    console.log('❌ Invalid obj or textBox, returning false');
-                    return false;
-                }
-                
-                // Get the raw value from textBox
-                var rawValue = obj.textBox.value;
-                console.log('📅 Raw textBox.value:', rawValue, 'Type:', typeof rawValue);
-                
-                // Handle null/undefined value that causes the error
-                if (!rawValue || rawValue === null || rawValue === undefined) {
-                    console.log('📅 Empty or null textBox.value, returning true');
-                    return true; // Let Required validation handle empty values
-                }
-                
-                // Convert value to string if it's not already and trim
-                var dateVal = String(rawValue).trim();
-                
-                if (dateVal === '') {
-                    console.log('📅 Empty string value, returning true');
-                    return true;
-                }
-                
-                console.log('📅 Processing date value:', dateVal);
-                
-                // Check if this is an HTML5 date format and convert it directly
-                if (dateVal.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    console.log('📅 HTML5 date format detected, converting...');
-                    var parts = dateVal.split('-');
-                    dateVal = parts[2] + '/' + parts[1] + '/' + parts[0]; // Convert to DD/MM/YYYY
-                    console.log('📅 Converted to:', dateVal);
-                }
-                
-                // Validate date format and structure
-                var dateAry = dateVal.split("/");
-                console.log('📅 Date array after split:', dateAry, 'Length:', dateAry.length);
-                
-                // Check if we have exactly 3 parts (DD/MM/YYYY)
-                if (!dateAry || dateAry.length !== 3) {
-                    console.log('❌ Invalid date format - should be DD/MM/YYYY, got:', dateAry);
-                    return false;
-                }
-                
-                // Check if all parts exist and are not empty
-                if (!dateAry[0] || !dateAry[1] || !dateAry[2]) {
-                    console.log('❌ Invalid date format - missing date parts:', 'Part0:', dateAry[0], 'Part1:', dateAry[1], 'Part2:', dateAry[2]);
-                    return false;
-                }
-                
-                // Check if year part has proper length (should be 4 digits)
-                if (dateAry[2].length !== 4) {
-                    console.log('❌ Invalid year format - should be 4 digits, got:', dateAry[2], 'Length:', dateAry[2].length);
-                    return false;
-                }
-                
-                // Skip the problematic original function and do our own validation
-                console.log('📅 Performing custom date validation instead of calling original function');
-                
-                try {
-                    var day = parseInt(dateAry[0]);
-                    var month = parseInt(dateAry[1]);
-                    var year = parseInt(dateAry[2]);
-                    
-                    console.log('📅 Parsed date components - Day:', day, 'Month:', month, 'Year:', year);
-                    
-                    // Basic range checks
-                    if (day < 1 || day > 31) {
-                        console.log('❌ Day out of range (1-31):', day);
-                        return false;
-                    }
-                    if (month < 1 || month > 12) {
-                        console.log('❌ Month out of range (1-12):', month);
-                        return false;
-                    }
-                    if (year < 1900 || year > 2100) {
-                        console.log('❌ Year out of range (1900-2100):', year);
-                        return false;
-                    }
-                    
-                    // Try to create a valid date object to verify the date is real
-                    var testDate = new Date(year, month - 1, day);
-                    if (testDate.getFullYear() === year && testDate.getMonth() === (month - 1) && testDate.getDate() === day) {
-                        console.log('✅ Date validation passed - valid date:', day + '/' + month + '/' + year);
-                        
-                        // Additional validation for birth date (age between 18-65)
-                        if (obj.textBox && obj.textBox.id === 'txt_DateOfBirth') {
-                            var today = new Date();
-                            var age = today.getFullYear() - year;
-                            var monthDiff = today.getMonth() - (month - 1);
-                            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < day)) {
-                                age--;
-                            }
-                            
-                            if (age < 18 || age > 65) {
-                                console.log('❌ Age validation failed - Age:', age, '(must be 18-65)');
-                                return false;
-                            }
-                            console.log('✅ Age validation passed - Age:', age);
-                        }
-                        
-                        // Additional validation for appointment date (not in future)
-                        if (obj.textBox && obj.textBox.id === 'txt_DateOfAppointment') {
-                            var appointmentDate = new Date(year, month - 1, day);
-                            var today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            appointmentDate.setHours(0, 0, 0, 0);
-                            
-                            if (appointmentDate > today) {
-                                console.log('❌ Appointment date validation failed - cannot be in future');
-                                return false;
-                            }
-                            
-                            var minDate = new Date(1980, 0, 1);
-                            if (appointmentDate < minDate) {
-                                console.log('❌ Appointment date validation failed - cannot be before 1980');
-                                return false;
-                            }
-                            console.log('✅ Appointment date validation passed');
-                        }
-                        
-                        return true;
-                    } else {
-                        console.log('❌ Invalid date combination - Date object mismatch');
-                        return false;
-                    }
-                } catch (validationError) {
-                    console.log('❌ Date validation error:', validationError.message);
-                    return false;
-                }
-            };
-            
-            // Also assign to global scope to ensure it's replaced everywhere
-            fAnyDate = window.fAnyDate;
-            
-            console.log('✅ تم تطبيق إصلاح fAnyDate بنجاح - Function replaced globally');
-            
-            // Add a test function to verify our override is working
-            window.testFAnyDate = function(dateValue) {
-                console.log('🧪 Testing fAnyDate with value:', dateValue);
-                var testObj = {
-                    textBox: { value: dateValue, id: 'test' },
-                    isRequired: true
-                };
-                var result = window.fAnyDate(testObj, true);
-                console.log('🧪 Test result:', result);
-                return result;
-            };
-            
-            console.log('🧪 Test function added: window.testFAnyDate("06/09/2007")');
-        }
+        // NOTE: Do not override fAnyDate; use built-in mValidation anyDate.
         
         // Override validateAll to include comprehensive asterisk color management
         if (typeof window.originalValidateAll === 'undefined' && typeof validateAll === 'function') {
@@ -812,6 +653,22 @@ $(document).ready(function() {
          console.log('✅ Date asterisk color control set up');
     });
     
+    // Sync HTML5 date (YYYY-MM-DD) to hidden mValidation fields (YYYY/MM/DD)
+    function ymdToSlash(ymd) {
+        if (!ymd || ymd.indexOf('-') === -1) return '';
+        var p = ymd.split('-');
+        return p[0] + '/' + p[1] + '/' + p[2];
+    }
+    function syncDatesToMval() {
+        $('#txt_DateOfBirth_mval').val(ymdToSlash($('#txt_DateOfBirth').val()));
+        $('#txt_DateOfAppointment_mval').val(ymdToSlash($('#txt_DateOfAppointment').val()));
+    }
+    $('#txt_DateOfBirth, #txt_DateOfAppointment').on('change input blur', function(){
+        syncDatesToMval();
+    });
+    // Initial sync
+    syncDatesToMval();
+
     // HTML5 date input handles formatting automatically
     // Set dynamic min/max dates for age range (18-65 years)
     var today = new Date();
@@ -949,6 +806,10 @@ $(document).ready(function() {
         }
         
         // Now run the comprehensive validation
+        // Ensure mValidation date fields are synced before validation
+        if (typeof syncDatesToMval === 'function') { syncDatesToMval(); }
+        // Nudge mValidation to read latest values
+        $('#txt_DateOfBirth_mval, #txt_DateOfAppointment_mval').trigger('blur');
         var validationResult = validateAll(validationArray, 1);
         console.log('✅ mValidation result:', validationResult);
         
