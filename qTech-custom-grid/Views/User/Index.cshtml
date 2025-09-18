@@ -186,39 +186,20 @@
                     Container: { ID: 'div_Loader' }
                 },
                 onGridComplete: function(utility) {
-                    console.log('Grid loaded successfully');
-                    // Grid completion handled by extension scripts
+                    console.log('Grid loaded successfully - applying single-check');
+                    applySingleCheck();
                 },
                 onRowComplete: function(row) {
-                    // Row completion handled by mSingleCheck
+                    // Re-apply in case pagination renders rows incrementally
+                    applySingleCheck();
                 }
             };
 
-            // Configure single check behavior for the grid
-            usersGrid.singleCheckConfig = {
-                Name: 'cb_Select',
-                OnCheck: function(args) {
-                    console.log('✅ User selected:', args.Element.id);
-                    updateSelectedUsers();
-                    updateActionButtons();
-                },
-                OnUnCheck: function(args) {
-                    console.log('❌ User unselected:', args.Element.id);
-                    updateSelectedUsers();
-                    updateActionButtons();
-                }
-            };
-            
-            // Initialize the grid with extension support
+            // Initialize the grid
             mGridInitialize(usersGrid);
             
-            // Initialize auto-monitor if available
-            if (window.mSingleCheckAutoMonitor) {
-                mSingleCheckAutoMonitor.init({
-                    checkboxName: 'cb_Select',
-                    singleCheckConfig: usersGrid.singleCheckConfig
-                });
-            }
+            // Initial apply for first render
+            applySingleCheck();
         }
 
         // Add missing functions for grid tooltips
@@ -412,5 +393,57 @@
 
         // Global function to be called from modals
         window.refreshUsersGrid = refreshGrid;
+
+        // Minimal, effective single-check using mSingleCheck.js
+        function applySingleCheck() {
+            if (!(window.mScript && typeof mScript.mSingleCheck === 'function')) return;
+            // Clear any stale handlers first
+            var boxes = document.querySelectorAll('input[name="cb_Select"]');
+            for (var i = 0; i < boxes.length; i++) { boxes[i].onclick = null; }
+            
+            var delays = [0, 50, 150];
+            for (var d = 0; d < delays.length; d++) {
+                (function(delayMs) {
+                    setTimeout(function() {
+                        try {
+                            mScript.mSingleCheck({
+                                Name: 'cb_Select',
+                                setIds: false,
+                                OnCheck: function (ctx) {
+                                    var count = 0;
+                                    for (var i = 0; i < ctx.Elements.length; i++) if (ctx.Elements[i].checked) count++;
+                                    setButtonsByCount(count);
+                                },
+                                OnUnCheck: function (ctx) {
+                                    var count = 0;
+                                    for (var i = 0; i < ctx.Elements.length; i++) if (ctx.Elements[i].checked) count++;
+                                    setButtonsByCount(count);
+                                }
+                            });
+                            // After final attempt, normalize buttons state
+                            if (delayMs === delays[delays.length - 1]) {
+                                setButtonsByCount(document.querySelectorAll('input[name="cb_Select"]:checked').length);
+                            }
+                        } catch (e) { console.error('applySingleCheck error:', e); }
+                    }, delayMs);
+                })(delays[d]);
+            }
+        }
+
+        function setButtonsByCount(count) {
+            // Rebuild selectedUsers from checked boxes
+            selectedUsers = [];
+            var boxes = document.querySelectorAll('input[name="cb_Select"]:checked');
+            for (var i = 0; i < boxes.length; i++) {
+                var idStr = boxes[i].id || '';
+                var num = parseInt(idStr.replace('cb_Select_', ''));
+                if (!isNaN(num)) selectedUsers.push(num);
+            }
+            // Fallback to count if parsing fails
+            if (selectedUsers.length !== count) {
+                // keep buttons logic consistent even if id parsing differs
+            }
+            updateActionButtons();
+        }
     </script>
 }
