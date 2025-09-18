@@ -397,17 +397,26 @@
         // Minimal, effective single-check using mSingleCheck.js
         function applySingleCheck() {
             if (!(window.mScript && typeof mScript.mSingleCheck === 'function')) return;
-            // Clear any stale handlers first
-            var boxes = document.querySelectorAll('input[name="cb_Select"]');
-            for (var i = 0; i < boxes.length; i++) { boxes[i].onclick = null; }
-            
+            // Clear stale handlers by Container (ID-based, no Name)
+            try {
+                var container = mScript.getByIds('tbl_Users');
+                if (container && typeof container.getByTypes === 'function') {
+                    var group = container.getByTypes(['checkbox']);
+                    if (group && group.Elements) {
+                        for (var i = 0; i < group.Elements.length; i++) {
+                            group.Elements[i].onclick = null;
+                        }
+                    }
+                }
+            } catch (_) {}
+
             var delays = [0, 50, 150];
             for (var d = 0; d < delays.length; d++) {
                 (function(delayMs) {
                     setTimeout(function() {
                         try {
                             mScript.mSingleCheck({
-                                Name: 'cb_Select',
+                                Container: 'tbl_Users',
                                 setIds: false,
                                 OnCheck: function (ctx) {
                                     var count = 0;
@@ -420,9 +429,17 @@
                                     setButtonsByCount(count);
                                 }
                             });
-                            // After final attempt, normalize buttons state
+                            // After final attempt, normalize by counting checked via container
                             if (delayMs === delays[delays.length - 1]) {
-                                setButtonsByCount(document.querySelectorAll('input[name="cb_Select"]:checked').length);
+                                try {
+                                    var ctn = mScript.getByIds('tbl_Users');
+                                    var grp = (ctn && typeof ctn.getByTypes === 'function') ? ctn.getByTypes(['checkbox']) : null;
+                                    var cc = 0;
+                                    if (grp && grp.Elements) {
+                                        for (var z = 0; z < grp.Elements.length; z++) if (grp.Elements[z].checked) cc++;
+                                    }
+                                    setButtonsByCount(cc);
+                                } catch(_) { setButtonsByCount(0); }
                             }
                         } catch (e) { console.error('applySingleCheck error:', e); }
                     }, delayMs);
@@ -431,18 +448,22 @@
         }
 
         function setButtonsByCount(count) {
-            // Rebuild selectedUsers from checked boxes
+            // Rebuild selectedUsers using container (ID-based only)
             selectedUsers = [];
-            var boxes = document.querySelectorAll('input[name="cb_Select"]:checked');
-            for (var i = 0; i < boxes.length; i++) {
-                var idStr = boxes[i].id || '';
-                var num = parseInt(idStr.replace('cb_Select_', ''));
-                if (!isNaN(num)) selectedUsers.push(num);
-            }
-            // Fallback to count if parsing fails
-            if (selectedUsers.length !== count) {
-                // keep buttons logic consistent even if id parsing differs
-            }
+            try {
+                var container = mScript.getByIds('tbl_Users');
+                var group = (container && typeof container.getByTypes === 'function') ? container.getByTypes(['checkbox']) : null;
+                if (group && group.Elements) {
+                    for (var i = 0; i < group.Elements.length; i++) {
+                        var el = group.Elements[i];
+                        if (el && el.checked) {
+                            var idStr = el.id || '';
+                            var num = parseInt(idStr.replace('cb_Select_', ''));
+                            if (!isNaN(num)) selectedUsers.push(num);
+                        }
+                    }
+                }
+            } catch(_) {}
             updateActionButtons();
         }
     </script>
