@@ -16,6 +16,7 @@
             <form id="createUserForm" method="post" action="/User/Create">
                 @Html.AntiForgeryToken()
                 
+                
                 <div class="modal-body">
                     <!-- Name Fields -->
                     <div class="row mb-3">
@@ -48,11 +49,11 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">تاريخ الميلاد <span id="spnA_DateOfBirth" class="fa fa-asterisk" style="color: black;">*</span></label>
-                            <input id="txt_DateOfBirth" name="DateOfBirth" type="date" class="form-control" 
+                            <input id="txt_DateOfBirth" name="DateOfBirth" type="text" class="form-control" 
+                                   placeholder="YYYY/MM/DD" 
                                    title="يجب أن يكون العمر بين 18 و 65 سنة" 
+                                   onblur="convertDateBeforeValidation(this)"
                                    />
-                            <!-- Hidden field for mValidation (DD/MM/YYYY) -->
-                            <input id="txt_DateOfBirth_mval" type="text" class="form-control" style="display:none;" />
                             <span id="spnE_DateOfBirth" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
@@ -71,7 +72,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">البريد الإلكتروني <span id="spnA_Email" class="fa"></span></label>
-                            <input id="txt_Email" name="Email" type="email" class="form-control" maxlength="50" placeholder="مثال: user@example.com" />
+                            <input id="txt_Email" name="Email" type="text" class="form-control" maxlength="50" placeholder="مثال: user@example.com" />
                             <span id="spnE_Email" class="text-danger"></span>
                         </div>
                     </div>
@@ -150,11 +151,11 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">تاريخ التعيين <span id="spnA_DateOfAppointment" class="fa fa-asterisk" style="color: black;">*</span></label>
-                            <input id="txt_DateOfAppointment" name="DateOfAppointment" type="date" class="form-control" 
+                            <input id="txt_DateOfAppointment" name="DateOfAppointment" type="text" class="form-control" 
+                                   placeholder="YYYY/MM/DD" 
                                    title="تاريخ التعيين لا يمكن أن يكون في المستقبل"
+                                   onblur="convertDateBeforeValidation(this)"
                                     />
-                            <!-- Hidden field for mValidation (DD/MM/YYYY) -->
-                            <input id="txt_DateOfAppointment_mval" type="text" class="form-control" style="display:none;" />
                             <span id="spnE_DateOfAppointment" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
@@ -183,26 +184,37 @@
 </div>
 
 <script>
+// Simple function to convert date format before validation
+function convertDateBeforeValidation(input) {
+    var value = input.value;
+    if (value.includes('/')) {
+        var parts = value.split('/');
+        
+        // Add leading zeros if needed
+        if (parts.length >= 2 && parts[1].length === 1) {
+            parts[1] = parts[1].padStart(2, '0');
+        }
+        if (parts.length >= 3 && parts[2].length === 1) {
+            parts[2] = parts[2].padStart(2, '0');
+        }
+        
+        var convertedValue = parts.join('/');
+        input.value = convertedValue;
+        console.log('Simple conversion:', value, '→', convertedValue);
+    }
+}
+
 $(document).ready(function() {
     // Show the modal
     $('#createUserModal').modal('show');
     
-    // Helper function to format date for mValidation (YYYY/MM/DD format)
-    function formatDateForValidation(date) {
-        var day = String(date.getDate()).padStart(2, '0');
-        var month = String(date.getMonth() + 1).padStart(2, '0');
-        var year = date.getFullYear();
-        return year + '/' + month + '/' + day; // YYYY/MM/DD format for mValidation
-    }
-    
-    // Initialize comprehensive validation array using mValidation framework with proper asterisk color logic
+    // Initialize validation array using mValidation framework
     var validationArray = [
         // First Name - Required field with character validation
         {
             Element: 'txt_FirstName',
             spn_A: 'spnA_FirstName',
             spn_E: 'spnE_FirstName',
-            spn_L: null,
             validationScheme: {
                 Required: {
                     Msg: 'برجاء ادخال الاسم الأول'
@@ -222,16 +234,13 @@ $(document).ready(function() {
                     Msg: 'الاسم الأول يجب أن يحتوي على حروف فقط'
                 }
             },
-            Color: 'red',
-            isBlur: true,
-            isChange: false
+            isBlur: true
         },
         // Father Name - Required field with character validation
         {
             Element: 'txt_FatherName',
             spn_A: 'spnA_FatherName',
             spn_E: 'spnE_FatherName',
-            spn_L: null,
             validationScheme: {
                 Required: {
                     Msg: 'برجاء ادخال اسم الأب'
@@ -251,10 +260,9 @@ $(document).ready(function() {
                     Msg: 'اسم الأب يجب أن يحتوي على حروف فقط'
                 }
             },
-            Color: 'red',
-            isBlur: true,
-            isChange: false
+            isBlur: true
         },
+        // Grand Father Name
         {
             Element: 'txt_GrandFatherName',
             spn_A: 'spnA_GrandFatherName',
@@ -272,6 +280,7 @@ $(document).ready(function() {
             },
             isBlur: true
         },
+        // Family Name
         {
             Element: 'txt_FamilyName',
             spn_A: 'spnA_FamilyName',
@@ -289,9 +298,9 @@ $(document).ready(function() {
             },
             isBlur: true
         },
-        // Date of Birth validation using mValidation.js anyDate scheme (bind to hidden text field)
+        // Date of Birth validation using mValidation.js anyDate scheme
         {
-            Element: 'txt_DateOfBirth_mval',
+            Element: 'txt_DateOfBirth',
             spn_A: 'spnA_DateOfBirth',
             spn_E: 'spnE_DateOfBirth',
             isBlur: true,
@@ -300,25 +309,23 @@ $(document).ready(function() {
                     isRequired: true,
                     requiredMessage: "برجاء إدخال تاريخ الميلاد",
                     invalidMessage: "تاريخ الميلاد غير صحيح",
-                    minDate: function() {
-                        // Minimum date for 65 years old
-                        var today = new Date();
-                        var sixtyFiveYearsAgo = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
-                        return sixtyFiveYearsAgo.getFullYear() + '/' +
-                               (sixtyFiveYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                               sixtyFiveYearsAgo.getDate().toString().padStart(2, '0');
-                    }(),
-                    minRangeMessage: "عمر الموظف لا يمكن أن يتجاوز 65 سنة",
                     maxDate: function() {
-                        // Maximum date for 18 years old
                         var today = new Date();
                         var eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
                         return eighteenYearsAgo.getFullYear() + '/' +
                                (eighteenYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
                                eighteenYearsAgo.getDate().toString().padStart(2, '0');
-                    }(),
+                    },
                     maxRangeMessage: "يجب أن يكون عمر الموظف 18 سنة على الأقل",
                     isGeorg: true
+                },
+                onSuccess: function() {
+                    // Validate hiring date when birth date changes
+                    if (typeof validateSpecificElement === 'function') {
+                        setTimeout(function() {
+                            validateSpecificElement('txt_DateOfAppointment');
+                        }, 100);
+                    }
                 }
             }
         },
@@ -424,9 +431,9 @@ $(document).ready(function() {
             },
             isChange: true
         },
-        // Date of Appointment validation using mValidation.js anyDate scheme (bind to hidden text field)
+        // Date of Appointment validation using mValidation.js anyDate scheme
         {
-            Element: 'txt_DateOfAppointment_mval',
+            Element: 'txt_DateOfAppointment',
             spn_A: 'spnA_DateOfAppointment',
             spn_E: 'spnE_DateOfAppointment',
             isBlur: true,
@@ -435,285 +442,80 @@ $(document).ready(function() {
                     isRequired: true,
                     requiredMessage: "برجاء إدخال تاريخ التعيين",
                     invalidMessage: "تاريخ التعيين غير صحيح",
-                    minDate: '1980/01/01', // Minimum date for appointment
-                    minRangeMessage: "تاريخ التعيين لا يمكن أن يكون قبل 1980",
+                    minDate: function() {
+                        var birthDateElement = document.getElementById('txt_DateOfBirth');
+                        var birthDateValue = birthDateElement ? birthDateElement.value : null;
+                        console.log('minDate function called, birthDateValue:', birthDateValue);
+                        
+                        if (!birthDateValue) {
+                            console.log('No birth date, returning default');
+                            return "1980/01/01";
+                        }
+                        
+                        // birthDateValue is already in YYYY/MM/DD format
+                        console.log('Using birthDateValue directly:', birthDateValue);
+                        var birthDate = new Date(birthDateValue.replace(/\//g, '-'));
+                        console.log('Parsed birthDate:', birthDate);
+                        
+                        var minHiringDate = new Date(birthDate.getFullYear() + 18, birthDate.getMonth(), birthDate.getDate());
+                        var result = minHiringDate.getFullYear() + '/' + 
+                               (minHiringDate.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                               minHiringDate.getDate().toString().padStart(2, '0');
+                        console.log('minDate result:', result);
+                        return result;
+                    },
+                    minRangeMessage: "تاريخ التعيين يجب أن يكون بعد إتمام 18 سنة من تاريخ الميلاد",
                     maxDate: function() {
-                        // Maximum date is today
+                        // Get today's date in YYYY/MM/DD format
                         var today = new Date();
-                        return today.getFullYear() + '/' +
+                        var todayStr = today.getFullYear() + '/' + 
                                (today.getMonth() + 1).toString().padStart(2, '0') + '/' +
                                today.getDate().toString().padStart(2, '0');
-                    }(),
+                        console.log('maxDate (today):', todayStr);
+                        console.log('Current date object:', today);
+                        console.log('Today year:', today.getFullYear(), 'month:', today.getMonth() + 1, 'day:', today.getDate());
+                        return todayStr;
+                    },
                     maxRangeMessage: "لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم",
                     isGeorg: true
                 },
-                onSuccess: function() {
-                    // Calculate leave balance when appointment date changes
-                    calculateLeaveBalance();
-                }
             }
         }
     ];
 
-    // Apply null safety fixes and date format conversion for mValidation
-    function applyNullSafetyFixes() {
-        console.log('تطبيق إصلاحات الأمان وتحويل صيغة التاريخ...');
-        
-        // Store original getValue function
-        if (typeof window.originalGetValue === 'undefined' && typeof getValue === 'function') {
-            window.originalGetValue = getValue;
-            
-            // Override getValue to be null-safe and convert HTML5 date format to mValidation format
-            window.getValue = function(element) {
-                var value = window.originalGetValue(element);
-                
-                // Handle null/undefined values
-                if (value === null || value === undefined) {
-                    return "";
-                }
-                
-                // Convert HTML5 date format (YYYY-MM-DD) to mValidation format (DD/MM/YYYY) for date inputs
-                var el = (typeof element === 'string') ? document.getElementById(element) : element;
-                if (el && el.type === 'date' && value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    var parts = value.split('-');
-                    var convertedDate = parts[2] + '/' + parts[1] + '/' + parts[0];
-                    console.log('🔄 تحويل التاريخ من', value, 'إلى', convertedDate);
-                    return convertedDate;
-                }
-                
-                return value;
-            };
-            
-            console.log('✅ تم تطبيق إصلاح getValue وتحويل صيغة التاريخ بنجاح');
-        }
-        
-        // NOTE: Do not override fAnyDate; use built-in mValidation anyDate.
-        
-        // Override validateAll to include comprehensive asterisk color management
-        if (typeof window.originalValidateAll === 'undefined' && typeof validateAll === 'function') {
-            window.originalValidateAll = validateAll;
-            
-            window.validateAll = function(elements) {
-                console.log('🔍 validateAll called - including comprehensive validation');
-                
-                // Call original validateAll first
-                var result = window.originalValidateAll(elements);
-                
-                // Force asterisk color updates for ALL fields after validation
-                setTimeout(function() {
-                    console.log('🎨 Forcing asterisk color updates for ALL fields...');
-                    
-                    // Check all error spans and update corresponding asterisks
-                    var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
-                    for (var i = 0; i < allErrorSpans.length; i++) {
-                        var errorSpan = allErrorSpans[i];
-                        var fieldName = errorSpan.id.replace('spnE_', '');
-                        var asteriskId = 'spnA_' + fieldName;
-                        var asterisk = document.getElementById(asteriskId);
-                        
-                        if (asterisk) {
-                            var hasError = errorSpan.textContent && errorSpan.textContent.trim() !== '';
-                            var isVisible = errorSpan.style.display !== 'none' && errorSpan.offsetParent !== null;
-                            
-                            if (hasError && isVisible) {
-                                asterisk.style.color = 'red';
-                                console.log('❌ Field ' + fieldName + ' - asterisk RED (has error)');
-                            } else {
-                                asterisk.style.color = 'black';
-                                console.log('✅ Field ' + fieldName + ' - asterisk BLACK (no error)');
-                            }
-                        }
-                    }
-                    
-                    // Also run date field validation specifically
-                    if (typeof window.validateDateField === 'function') {
-                        console.log('📅 Running date field validation from validateAll...');
-                        window.validateDateField('txt_DateOfBirth');
-                        window.validateDateField('txt_DateOfAppointment');
-                    }
-                }, 50);
-                
-                return result;
-            };
-            
-            console.log('✅ validateAll override applied with comprehensive asterisk control');
-        }
-    }
-    
-    // Apply null safety fixes first
-    applyNullSafetyFixes();
-    
-    // Add direct date validation for asterisk color control
-    $(document).ready(function() {
-        console.log('🚀 Setting up date asterisk color control...');
-        
-         // Function to validate date and control asterisk color (make it global)
-         window.validateDateField = function(inputId) {
-            var input = document.getElementById(inputId);
-            var asteriskId = 'spnA_' + inputId.replace('txt_', '');
-            var asterisk = document.getElementById(asteriskId);
-            var errorSpanId = 'spnE_' + inputId.replace('txt_', '');
-            var errorSpan = document.getElementById(errorSpanId);
-            
-            if (!input || !asterisk) return true;
-            
-            var value = input.value;
-            var isValid = true;
-            var errorMessage = '';
-            
-            // Check if empty (required)
-            if (!value || value.trim() === '') {
-                isValid = false;
-                errorMessage = inputId === 'txt_DateOfBirth' ? 'برجاء إدخال تاريخ الميلاد' : 'برجاء إدخال تاريخ التعيين';
-            } else {
-                var inputDate = new Date(value);
-                var today = new Date();
-                
-                if (inputId === 'txt_DateOfBirth') {
-                    // Age validation (18-65 years)
-                    var age = today.getFullYear() - inputDate.getFullYear();
-                    var monthDiff = today.getMonth() - inputDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < inputDate.getDate())) {
-                        age--;
-                    }
-                    
-                    if (age < 18 || age > 65) {
-                        isValid = false;
-                        errorMessage = 'يجب أن يكون العمر بين 18 و 65 سنة (العمر الحالي: ' + age + ' سنة)';
-                    }
-                } else if (inputId === 'txt_DateOfAppointment') {
-                    // Appointment date validation
-                    var minDate = new Date('1980-01-01');
-                    inputDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-                    
-                    if (inputDate < minDate) {
-                        isValid = false;
-                        errorMessage = 'تاريخ التعيين لا يمكن أن يكون قبل 1980';
-                    } else if (inputDate > today) {
-                        isValid = false;
-                        errorMessage = 'لا يمكن ان يكون تاريخ التعيين بعد تاريخ اليوم';
-                    }
-                }
-            }
-            
-             // Update asterisk color using CSS classes and force style override
-             if (isValid) {
-                 asterisk.classList.remove('validation-error', 'date-validation-error');
-                 asterisk.style.color = 'black'; // Force black for valid
-                 if (errorSpan) errorSpan.textContent = '';
-                 console.log('✅ ' + inputId + ' valid - asterisk BLACK');
-             } else {
-                 asterisk.classList.add('validation-error', 'date-validation-error');
-                 asterisk.style.color = 'red'; // Force red for invalid
-                 if (errorSpan) errorSpan.textContent = errorMessage;
-                 console.log('❌ ' + inputId + ' invalid - asterisk RED:', errorMessage);
-             }
-            
-            return isValid;
-        }
-        
-         // Attach validation to date inputs
-         $('#txt_DateOfBirth, #txt_DateOfAppointment').on('blur change input', function() {
-             var inputId = this.id;
-             console.log('📅 Date input event:', inputId, 'Value:', this.value);
-             setTimeout(function() {
-                 window.validateDateField(inputId);
-             }, 50);
-         });
-         
-         // Function to update ALL asterisk colors based on current validation state
-         window.updateAllAsteriskColors = function() {
-             console.log('🎨 Updating ALL asterisk colors based on validation state...');
-             
-             var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
-             for (var i = 0; i < allErrorSpans.length; i++) {
-                 var errorSpan = allErrorSpans[i];
-                 var fieldName = errorSpan.id.replace('spnE_', '');
-                 var asteriskId = 'spnA_' + fieldName;
-                 var asterisk = document.getElementById(asteriskId);
-                 
-                 if (asterisk) {
-                     var hasError = errorSpan.textContent && errorSpan.textContent.trim() !== '';
-                     var isVisible = errorSpan.style.display !== 'none' && errorSpan.offsetParent !== null;
-                     
-                     if (hasError && isVisible) {
-                         asterisk.style.color = 'red';
-                         console.log('❌ Field ' + fieldName + ' - asterisk RED (has error)');
-                     } else {
-                         asterisk.style.color = 'black';
-                         console.log('✅ Field ' + fieldName + ' - asterisk BLACK (no error)');
-                     }
-                 }
-             }
-         };
-         
-         // Note: Save button validation is handled in the main btn_SaveUser click handler below
-         
-         console.log('✅ Date asterisk color control set up');
-    });
-    
-    // Sync HTML5 date (YYYY-MM-DD) to hidden mValidation fields (YYYY/MM/DD)
-    function ymdToSlash(ymd) {
-        if (!ymd || ymd.indexOf('-') === -1) return '';
-        var p = ymd.split('-');
-        return p[0] + '/' + p[1] + '/' + p[2];
-    }
-    function syncDatesToMval() {
-        $('#txt_DateOfBirth_mval').val(ymdToSlash($('#txt_DateOfBirth').val()));
-        $('#txt_DateOfAppointment_mval').val(ymdToSlash($('#txt_DateOfAppointment').val()));
-    }
-    $('#txt_DateOfBirth, #txt_DateOfAppointment').on('change input blur', function(){
-        syncDatesToMval();
-    });
-    // Initial sync
-    syncDatesToMval();
-
-    // HTML5 date input handles formatting automatically
-    // Set dynamic min/max dates for age range (18-65 years)
-    var today = new Date();
-    var minDate = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
-    var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-    
-    $('#txt_DateOfBirth').attr('min', minDate.toISOString().split('T')[0]);
-    $('#txt_DateOfBirth').attr('max', maxDate.toISOString().split('T')[0]);
-    
-    // Set max date for appointment date to today
-    $('#txt_DateOfAppointment').attr('max', today.toISOString().split('T')[0]);
-    
-    console.log('📅 Birth date picker range set:', minDate.toISOString().split('T')[0], 'to', maxDate.toISOString().split('T')[0]);
-    console.log('📅 Appointment date max set to:', today.toISOString().split('T')[0]);
-
-    // Debug: Check if date validation is in the array
-    console.log('🔍 Validation array length:', validationArray.length);
-    var dateValidation = validationArray.find(function(item) { return item.Element === 'txt_DateOfBirth'; });
-    console.log('🔍 Date validation found:', dateValidation ? 'YES' : 'NO');
-    if (dateValidation) {
-        console.log('🔍 Date validation scheme:', dateValidation.validationScheme);
-    }
-
     // Initialize asterisks as BLACK first (proper mValidation logic)
     validationArray.forEach(function(item) {
         if (item.validationScheme && item.validationScheme.Required) {
-            var asteriskElement = null;
-            
-            // Get the asterisk element safely
-            if (typeof item.spn_A === 'string') {
-                asteriskElement = document.getElementById(item.spn_A);
-            } else if (item.spn_A && item.spn_A.nodeType) {
-                asteriskElement = item.spn_A;
-            }
-            
-            // Set color only if element exists
+            var asteriskElement = document.getElementById(item.spn_A);
             if (asteriskElement) {
                 asteriskElement.style.color = 'black'; // Start with black, turn red on validation failure
-            } else {
-                console.warn('Asterisk element not found for:', item.Element);
             }
         }
     });
 
-    // Add validation events
+
+
+    // Simple approach: Convert date right before validation
+    function convertDateBeforeValidation(input) {
+        var value = input.value;
+        if (value.includes('/')) {
+            var parts = value.split('/');
+            
+            // Add leading zeros if needed
+            if (parts.length >= 2 && parts[1].length === 1) {
+                parts[1] = parts[1].padStart(2, '0');
+            }
+            if (parts.length >= 3 && parts[2].length === 1) {
+                parts[2] = parts[2].padStart(2, '0');
+            }
+            
+            var convertedValue = parts.join('/');
+            input.value = convertedValue;
+            console.log('Simple conversion:', value, '→', convertedValue);
+        }
+    }
+
+    // Add validation events using mValidation.js
     AddValidationEvents(validationArray);
 
     // Calculate leave balance when appointment date changes
@@ -721,210 +523,33 @@ $(document).ready(function() {
         calculateLeaveBalance();
     });
 
-    // Save button click with enhanced debugging
+    // Save button click
     $('#btn_SaveUser').on('click', function() {
-        console.log('🔘 Save button clicked');
-        console.log('📋 Starting validation...');
-        
-        // Debug: Log current form values before validation
-        console.log('📝 Current form values:');
-        console.log('First Name:', $('#txt_FirstName').val());
-        console.log('Father Name:', $('#txt_FatherName').val());
-        console.log('Grand Father Name:', $('#txt_GrandFatherName').val());
-        console.log('Family Name:', $('#txt_FamilyName').val());
-        console.log('Date of Birth:', $('#txt_DateOfBirth').val());
-        console.log('Identity Number:', $('#txt_IdentityNumber').val());
-        console.log('Mobile Number:', $('#txt_MobileNumber').val());
-        console.log('Bank Account:', $('#txt_BankAccountNumber').val());
-        console.log('Appointment Date:', $('#txt_DateOfAppointment').val());
-        console.log('Gender:', $('#ddl_Gender').val());
-        console.log('Nationality:', $('#ddl_Nationality').val());
-        console.log('Email:', $('#txt_Email').val());
-        console.log('Bank ID (optional):', $('#ddl_BankId').val());
-        console.log('Marital Status (optional):', $('#ddl_MaritalStatusId').val());
-        console.log('Education (optional):', $('#txt_EducationalQualification').val());
-        
-        // Force validation of ALL fields individually first
-        console.log('🔄 Running individual field validation...');
-        
-        // Trigger validation for each field individually to ensure error messages appear
-        // Note: BankId, MaritalStatusId, and EducationalQualification are now OPTIONAL fields
-        var allFields = [
-            'txt_FirstName', 'txt_FatherName', 'txt_GrandFatherName', 'txt_FamilyName',
-            'txt_IdentityNumber', 'txt_MobileNumber', 'txt_BankAccountNumber', 'txt_Email',
-            'ddl_Gender', 'ddl_Nationality'
-        ];
-        
-        // Validate each field individually to trigger error messages
-        for (var i = 0; i < allFields.length; i++) {
-            var fieldId = allFields[i];
-            var element = document.getElementById(fieldId);
-            if (element) {
-                // Trigger multiple events to ensure mValidation activates
-                $(element).trigger('blur');
-                $(element).trigger('focusout');
-                $(element).trigger('change');
-                console.log('🔍 Triggered validation for:', fieldId);
-                
-                // Also manually check if field is empty and force error display
-                var value = $(element).val();
-                var asteriskId = 'spnA_' + fieldId.replace('txt_', '').replace('ddl_', '');
-                var errorSpanId = 'spnE_' + fieldId.replace('txt_', '').replace('ddl_', '');
-                
-                if (!value || value.trim() === '') {
-                    // Force error message and red asterisk for empty required fields
-                    var errorSpan = document.getElementById(errorSpanId);
-                    var asterisk = document.getElementById(asteriskId);
-                    
-                    if (errorSpan && !errorSpan.textContent.trim()) {
-                        var fieldName = fieldId.replace('txt_', '').replace('ddl_', '');
-                        // Only required fields need error messages
-                        var arabicFieldNames = {
-                            'FirstName': 'الاسم الأول',
-                            'FatherName': 'اسم الأب', 
-                            'GrandFatherName': 'اسم الجد',
-                            'FamilyName': 'لقب العائلة',
-                            'IdentityNumber': 'رقم الهوية',
-                            'MobileNumber': 'رقم الجوال',
-                            'BankAccountNumber': 'رقم الحساب البنكي',
-                            'Email': 'البريد الإلكتروني',
-                            'Gender': 'الجنس',
-                            'Nationality': 'الجنسية'
-                        };
-                        
-                        var arabicName = arabicFieldNames[fieldName] || fieldName;
-                        errorSpan.textContent = 'برجاء إدخال ' + arabicName;
-                        console.log('🚨 Forced error message for empty field:', fieldId);
-                    }
-                    
-                    if (asterisk) {
-                        asterisk.style.color = 'red';
-                        console.log('🔴 Forced red asterisk for:', fieldId);
-                    }
-                }
-            }
-        }
-        
-        // Now run the comprehensive validation
-        // Ensure mValidation date fields are synced before validation
-        if (typeof syncDatesToMval === 'function') { syncDatesToMval(); }
-        // Nudge mValidation to read latest values
-        $('#txt_DateOfBirth_mval, #txt_DateOfAppointment_mval').trigger('blur');
+        // Run validation using mValidation.js
         var validationResult = validateAll(validationArray, 1);
-        console.log('✅ mValidation result:', validationResult);
         
-        // Force validation of date fields and update all asterisk colors
-        setTimeout(function() {
-            console.log('🔄 Running comprehensive field validation...');
-            
-            // Validate date fields specifically
-            if (typeof window.validateDateField === 'function') {
-                window.validateDateField('txt_DateOfBirth');
-                window.validateDateField('txt_DateOfAppointment');
-            }
-            
-            // Update ALL asterisk colors based on current validation state
-            if (typeof window.updateAllAsteriskColors === 'function') {
-                window.updateAllAsteriskColors();
-            }
-            
-            // Check if we should proceed with saving
-            var allErrorSpans = document.querySelectorAll('[id^="spnE_"]');
-            var hasAnyErrors = false;
-            var errorCount = 0;
-            
-            for (var i = 0; i < allErrorSpans.length; i++) {
-                var errorSpan = allErrorSpans[i];
-                if (errorSpan.textContent && errorSpan.textContent.trim() !== '') {
-                    hasAnyErrors = true;
-                    errorCount++;
-                    console.log('❌ Found error in field:', errorSpan.id, 'Error:', errorSpan.textContent);
-                }
-            }
-            
-            console.log('📊 Total errors found:', errorCount);
-            
-            if (!hasAnyErrors && validationResult) {
-                console.log('✅ All validation passed, calling saveUser()');
+        if (validationResult) {
             saveUser();
         } else {
-                console.log('❌ Validation failed - not saving');
-                console.log('mValidation result:', validationResult);
-                console.log('Has field errors:', hasAnyErrors);
-                
-                // Show alert to user
             alert('برجاء تصحيح الأخطاء في النموذج أولاً');
         }
-        }, 200);
-        
-        // Don't proceed immediately - wait for comprehensive validation
     });
 
-    // Clear validation button - use mValidation function with proper asterisk logic
+    // Clear validation button
     $('#btn_ClearValidation').on('click', function() {
-        if (typeof clearValidation === 'function') {
             clearValidation(validationArray);
-            // After clearing validation, reset asterisks to black for required fields (proper mValidation logic)
-            validationArray.forEach(function(item) {
-                if (item.validationScheme && item.validationScheme.Required) {
-                    var asteriskElement = document.getElementById(item.spn_A);
-                    if (asteriskElement) {
-                        asteriskElement.style.color = 'black'; // Black initially, red on validation failure
-                    }
-                }
-            });
-        } else {
-            // Fallback: manually clear error spans and reset asterisks
-            validationArray.forEach(function(item) {
-                if (item.spn_E) {
-                    if (typeof item.spn_E === 'string') {
-                        $('#' + item.spn_E).text('');
-                    } else {
-                        item.spn_E.innerHTML = '';
-                    }
-                }
-                if (item.spn_A) {
-                    var asteriskElement = document.getElementById(item.spn_A);
-                    if (asteriskElement) {
-                        // Reset asterisk to black for required fields, hide for optional fields
-                        if (item.validationScheme && item.validationScheme.Required) {
-                            asteriskElement.style.color = 'black'; // Black initially, red on validation failure
-                            asteriskElement.style.display = '';
-                        } else {
-                            asteriskElement.style.display = 'none';
-                        }
-                    }
-                }
-            });
-        }
     });
 
     // Reset form button
     $('#btn_ResetForm').on('click', function() {
         // Clear all form fields
         $('#createUserForm')[0].reset();
-        // Clear validation using mValidation function
-        if (typeof clearValidation === 'function') {
+        // Clear validation
             clearValidation(validationArray);
-            // After clearing validation, reset asterisks to black for required fields
-            validationArray.forEach(function(item) {
-                if (item.validationScheme && item.validationScheme.Required) {
-                    var asteriskElement = document.getElementById(item.spn_A);
-                    if (asteriskElement) {
-                        asteriskElement.style.color = 'black'; // Black initially, red on validation failure
-                    }
-                }
-            });
-        }
         // Reset leave balance
         $('#lbl_LeaveBalance').text('0 يوم');
         // Reset default values
         $('#radio_Male').prop('checked', true);
-        $('#ddl_Nationality').val('');
-        // Reset optional fields
-        $('#ddl_BankId').val('');
-        $('#ddl_MaritalStatusId').val('');
-        $('#txt_EducationalQualification').val('');
     });
 
     // Calculate leave balance
@@ -956,17 +581,9 @@ $(document).ready(function() {
         }
     }
 
-    // Save user function with enhanced debugging
+    // Save user function
     function saveUser() {
-        console.log('🚀 === SAVE USER FUNCTION CALLED ===');
-        
         var formData = new FormData($('#createUserForm')[0]);
-        
-        // Debug: Log all form data
-        console.log('📝 Form data being sent:');
-        for (var pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
         
         $.ajax({
             url: '/User/Create',
@@ -975,34 +592,23 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('✅ AJAX Success:', response);
                 if (response.success) {
                     $('#createUserModal').modal('hide');
                     alert(response.message);
                     if (window.refreshUsersGrid) {
                         window.refreshUsersGrid();
                     } else if (typeof Reload === 'function' && typeof usersGrid !== 'undefined') {
-                        // Fallback to mGrid reload
                         Reload(usersGrid.searchObject, usersGrid);
                     }
                 } else {
-                    console.log('❌ Server returned error:', response.message);
                     alert(response.message);
                 }
             },
             error: function(xhr, status, error) {
-                console.log('❌ AJAX Error Details:');
-                console.log('Status:', status);
-                console.log('Error:', error);
-                console.log('Response Text:', xhr.responseText);
-                console.log('Status Code:', xhr.status);
-                
                 try {
                     var errorResponse = JSON.parse(xhr.responseText);
-                    console.log('Parsed Error Response:', errorResponse);
                     alert('حدث خطأ أثناء حفظ البيانات: ' + (errorResponse.message || error));
                 } catch (e) {
-                    console.log('Could not parse error response');
                     alert('حدث خطأ أثناء حفظ البيانات: ' + xhr.status + ' - ' + error);
                 }
             }
