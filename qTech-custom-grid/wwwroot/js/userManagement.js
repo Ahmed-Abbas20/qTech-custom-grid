@@ -16,16 +16,14 @@
 
         // Initialize the module
         init: function() {
-            this.initializeUsersGrid();
-            this.bindActionButtons();
-            this.bindModalEvents();
+            UserManagement.initializeUsersGrid();
+            UserManagement.bindActionButtons();
+            UserManagement.bindModalEvents();
         },
 
         // Initialize mGrid for users
         initializeUsersGrid: function() {
-            var self = this;
-            
-            this.usersGrid = {
+            UserManagement.usersGrid = {
                 Table: {
                     ID: 'tbl_Users',
                     Header: { Row: {} },
@@ -71,34 +69,33 @@
                 onGridComplete: function(utility) {
                     // Apply single check with a small delay to ensure DOM is ready
                     setTimeout(function() {
-                        self.applySingleCheck();
+                        UserManagement.applySingleCheck();
                     }, 100);
                 },
                 onRowComplete: function(row) {
                     // Reapply single check for each row completion
                     setTimeout(function() {
-                        self.applySingleCheck();
+                        UserManagement.applySingleCheck();
                     }, 50);
                 }
             };
 
-            mGridInitialize(this.usersGrid);
-            this.applySingleCheck();
+            mGridInitialize(UserManagement.usersGrid);
+            UserManagement.applySingleCheck();
         },
 
         // Update selected user from checkbox
         updateSelectedUser: function() {
-            this.selectedUserId = null;
-            var self = this;
+            UserManagement.selectedUserId = null;
             
-            $('input[name="cb_Select"]:checked').each(function() {
-                var $checkbox = $(this);
+            $('input[name="cb_Select"]:checked').each(function(index, element) {
+                var $checkbox = $(element);
                 var checkboxId = $checkbox.attr('id');
                 
                 if (checkboxId && checkboxId.indexOf('cb_Select_') !== -1) {
                     var userId = parseInt(checkboxId.replace('cb_Select_', ''));
                     if (!isNaN(userId)) {
-                        self.selectedUserId = userId;
+                        UserManagement.selectedUserId = userId;
                     }
                 }
             });
@@ -106,7 +103,7 @@
 
         // Update action buttons state
         updateActionButtons: function() {
-            var hasSelection = this.selectedUserId !== null;
+            var hasSelection = UserManagement.selectedUserId !== null;
             
             var $viewBtn = $('#btn_View');
             var $deleteBtn = $('#btn_Delete');
@@ -125,8 +122,6 @@
             if (!(window.mScript && typeof mScript.mSingleCheck === 'function')) {
                 return;
             }
-            
-            var self = this;
             
             // Clear any existing handlers first
             try {
@@ -152,12 +147,12 @@
                     Container: 'tbl_Users',
                     setIds: false, // Don't let mSingleCheck change the IDs
                     OnCheck: function (ctx) {
-                        self.updateSelectedUser();
-                        self.updateActionButtons();
+                        UserManagement.updateSelectedUser();
+                        UserManagement.updateActionButtons();
                     },
                     OnUnCheck: function (ctx) {
-                        self.updateSelectedUser();
-                        self.updateActionButtons();
+                        UserManagement.updateSelectedUser();
+                        UserManagement.updateActionButtons();
                     }
                 });
             } catch (e) {
@@ -166,13 +161,14 @@
             
             // Manual fallback - bind change events directly to checkboxes
             setTimeout(function() {
-                $('input[name="cb_Select"]').off('change.manual').on('change.manual', function() {
-                    if (this.checked) {
+                $('input[name="cb_Select"]').off('change.manual').on('change.manual', function(event) {
+                    var checkbox = event.target;
+                    if (checkbox.checked) {
                         // Uncheck all other checkboxes
-                        $('input[name="cb_Select"]').not(this).prop('checked', false);
+                        $('input[name="cb_Select"]').not(checkbox).prop('checked', false);
                     }
-                    self.updateSelectedUser();
-                    self.updateActionButtons();
+                    UserManagement.updateSelectedUser();
+                    UserManagement.updateActionButtons();
                 });
             }, 200);
         },
@@ -180,16 +176,14 @@
 
         // Bind action buttons
         bindActionButtons: function() {
-            var self = this;
-            
-            $('#btn_Search').on('click', function() { self.performSearch(); });
-            $('#btn_ClearSearch').on('click', function() { self.clearSearch(); });
+            $('#btn_Search').on('click', function() { UserManagement.performSearch(); });
+            $('#btn_ClearSearch').on('click', function() { UserManagement.clearSearch(); });
             $('#txt_PhoneSearch, #txt_IdSearch').on('keypress', function(e) {
-                if (e.which === 13) self.performSearch();
+                if (e.which === 13) UserManagement.performSearch();
             });
-            $('#btn_Add').on('click', function() { self.showCreateModal(); });
-            $('#btn_View').on('click', function() { self.viewSelectedUser(); });
-            $('#btn_Delete').on('click', function() { self.deleteSelectedUsers(); });
+            $('#btn_Add').on('click', function() { UserManagement.showCreateModal(); });
+            $('#btn_View').on('click', function() { UserManagement.viewSelectedUser(); });
+            $('#btn_Delete').on('click', function() { UserManagement.deleteSelectedUsers(); });
         },
 
         // Search functionality
@@ -200,12 +194,17 @@
                 phoneSearch: phoneSearch,
                 idSearch: idSearch
             };
-            this.usersGrid.searchObject = searchObject;
-            Reload(searchObject, this.usersGrid);
+            UserManagement.usersGrid.searchObject = searchObject;
             
-            var self = this;
+            // Disable view and delete buttons during search
+            $('#btn_View').prop('disabled', true);
+            $('#btn_Delete').prop('disabled', true);
+            UserManagement.selectedUserId = null;
+            
+            Reload(searchObject, UserManagement.usersGrid);
+            
             setTimeout(function() {
-                self.applySingleCheck();
+                UserManagement.applySingleCheck();
             }, 200);
         },
 
@@ -214,22 +213,26 @@
             $('#txt_PhoneSearch').val('');
             $('#txt_IdSearch').val('');
             var emptySearchObject = { phoneSearch: '', idSearch: '' };
-            this.usersGrid.searchObject = emptySearchObject;
-            Reload(emptySearchObject, this.usersGrid);
+            UserManagement.usersGrid.searchObject = emptySearchObject;
             
-            var self = this;
+            // Disable view and delete buttons during clear search
+            $('#btn_View').prop('disabled', true);
+            $('#btn_Delete').prop('disabled', true);
+            UserManagement.selectedUserId = null;
+            
+            Reload(emptySearchObject, UserManagement.usersGrid);
+            
             setTimeout(function() {
-                self.applySingleCheck();
+                UserManagement.applySingleCheck();
             }, 200);
         },
 
         // Show create modal
         showCreateModal: function() {
-            var self = this;
             $.get('/User/Create')
                 .done(function(html) {
                     $('#userModalContainer').html(html);
-                    self.isModalOpen = true;
+                    UserManagement.isModalOpen = true;
                 })
                 .fail(function() {
                     alert('حدث خطأ أثناء تحميل نموذج الإضافة');
@@ -238,40 +241,37 @@
 
         // View selected user
         viewSelectedUser: function() {
-            if (this.selectedUserId) {
-                window.location.href = '/User/Details/' + this.selectedUserId;
+            if (UserManagement.selectedUserId) {
+                window.location.href = '/User/Details/' + UserManagement.selectedUserId;
             }
         },
 
         // Delete selected user
         deleteSelectedUsers: function() {
-            if (!this.selectedUserId) return;
+            if (!UserManagement.selectedUserId) return;
             
-            var self = this;
             $('#confirmationModalLabel').text('تأكيد الحذف');
             $('#confirmationModalBody').text('هل أنت متأكد من حذف هذا المستخدم؟');
             $('#confirmActionBtn').off('click').on('click', function() {
                 $('#confirmationModal').modal('hide');
-                self.performDelete();
+                UserManagement.performDelete();
             });
             $('#confirmationModal').modal('show');
         },
 
         // Perform actual delete
         performDelete: function() {
-            var self = this;
-            
             $.ajax({
                 url: '/User/Delete',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ id: this.selectedUserId }),
+                data: JSON.stringify({ id: UserManagement.selectedUserId }),
                 success: function(response) {
                     if (response.success) {
                         alert(response.message);
-                        Reload(self.usersGrid.searchObject, self.usersGrid);
-                        self.selectedUserId = null;
-                        self.updateActionButtons();
+                        Reload(UserManagement.usersGrid.searchObject, UserManagement.usersGrid);
+                        UserManagement.selectedUserId = null;
+                        UserManagement.updateActionButtons();
                     } else {
                         alert(response.message);
                     }
@@ -284,27 +284,24 @@
 
         // Refresh grid after operations
         refreshGrid: function() {
-            Reload(this.usersGrid.searchObject, this.usersGrid);
-            this.selectedUserId = null;
-            this.updateActionButtons();
+            Reload(UserManagement.usersGrid.searchObject, UserManagement.usersGrid);
+            UserManagement.selectedUserId = null;
+            UserManagement.updateActionButtons();
             
-            var self = this;
             setTimeout(function() {
-                self.applySingleCheck();
+                UserManagement.applySingleCheck();
             }, 200);
         },
 
         // Bind modal events
         bindModalEvents: function() {
-            var self = this;
-            
             // Listen for modal events
             $(document).on('shown.bs.modal', '#createUserModal', function() {
-                self.initializeModalValidation();
+                UserManagement.initializeModalValidation();
             });
             
             $(document).on('hidden.bs.modal', '#createUserModal', function() {
-                self.isModalOpen = false;
+                UserManagement.isModalOpen = false;
                 // Clean up modal content
                 $('#userModalContainer').empty();
             });
@@ -312,14 +309,14 @@
 
         // Initialize modal validation
         initializeModalValidation: function() {
-            this.initializeValidationArray();
-            this.bindModalButtons();
-            this.initializeAsterisks();
+            UserManagement.initializeValidationArray();
+            UserManagement.bindModalButtons();
+            UserManagement.initializeAsterisks();
         },
 
         // Initialize validation array
         initializeValidationArray: function() {
-            this.validationArray = [
+            UserManagement.validationArray = [
                 // First Name - Required field with character validation
                 {
                     Element: 'txt_FirstName',
@@ -419,6 +416,20 @@
                             isRequired: true,
                             requiredMessage: "برجاء إدخال تاريخ الميلاد",
                             invalidMessage: "تاريخ الميلاد غير صحيح",
+                            minDefaultDate: function() {
+                                var today = new Date();
+                                var sixtyFiveYearsAgo = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
+                                return sixtyFiveYearsAgo.getFullYear() + '/' +
+                                       (sixtyFiveYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                                       sixtyFiveYearsAgo.getDate().toString().padStart(2, '0');
+                            },
+                            maxDefaultDate: function() {
+                                var today = new Date();
+                                var eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                                return eighteenYearsAgo.getFullYear() + '/' +
+                                       (eighteenYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                                       eighteenYearsAgo.getDate().toString().padStart(2, '0');
+                            },
                             maxDate: function() {
                                 var today = new Date();
                                 var eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
@@ -427,6 +438,14 @@
                                        eighteenYearsAgo.getDate().toString().padStart(2, '0');
                             },
                             maxRangeMessage: "يجب أن يكون عمر الموظف 18 سنة على الأقل",
+                            minDate: function() {
+                                var today = new Date();
+                                var sixtyFiveYearsAgo = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate());
+                                return sixtyFiveYearsAgo.getFullYear() + '/' +
+                                       (sixtyFiveYearsAgo.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                                       sixtyFiveYearsAgo.getDate().toString().padStart(2, '0');
+                            },
+                            minRangeMessage: "يجب أن يكون عمر الموظف لا يتجاوز 65 سنة",
                             isGeorg: true
                         },
                         onSuccess: function() {
@@ -588,7 +607,7 @@
 
         // Initialize asterisks as BLACK first
         initializeAsterisks: function() {
-            this.validationArray.forEach(function(item) {
+            UserManagement.validationArray.forEach(function(item) {
                 if (item.validationScheme && item.validationScheme.Required) {
                     var asteriskElement = document.getElementById(item.spn_A);
                     if (asteriskElement) {
@@ -600,23 +619,21 @@
 
         // Bind modal buttons
         bindModalButtons: function() {
-            var self = this;
-            
             // Add validation events using mValidation.js
-            AddValidationEvents(this.validationArray);
+            AddValidationEvents(UserManagement.validationArray);
 
             // Calculate leave balance when appointment date changes
             $('#txt_DateOfAppointment').on('change', function() {
-                self.calculateLeaveBalance();
+                UserManagement.calculateLeaveBalance();
             });
 
             // Save button click
             $('#btn_SaveUser').on('click', function() {
                 // Run validation using mValidation.js
-                var validationResult = validateAll(self.validationArray, 1);
+                var validationResult = validateAll(UserManagement.validationArray, 1);
                 
                 if (validationResult) {
-                    self.saveUser();
+                    UserManagement.saveUser();
                 } else {
                     alert('برجاء تصحيح الأخطاء في النموذج أولاً');
                 }
@@ -624,7 +641,7 @@
 
             // Clear validation button
             $('#btn_ClearValidation').on('click', function() {
-                clearValidation(self.validationArray);
+                clearValidation(UserManagement.validationArray);
             });
 
             // Reset form button
@@ -632,7 +649,7 @@
                 // Clear all form fields
                 $('#createUserForm')[0].reset();
                 // Clear validation
-                clearValidation(self.validationArray);
+                clearValidation(UserManagement.validationArray);
                 // Reset leave balance
                 $('#lbl_LeaveBalance').text('0 يوم');
                 // Reset default values
@@ -671,7 +688,6 @@
 
         // Save user function
         saveUser: function() {
-            var self = this;
             var formData = new FormData($('#createUserForm')[0]);
             
             $.ajax({
@@ -684,7 +700,7 @@
                     if (response.success) {
                         $('#createUserModal').modal('hide');
                         alert(response.message);
-                        self.refreshGrid();
+                        UserManagement.refreshGrid();
                     } else {
                         alert(response.message);
                     }
