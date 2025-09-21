@@ -194,16 +194,23 @@ namespace qTech_custom_grid.Services
         {
             try
             {
-                // Use the BaseRepo's DeleteByIdAsync method which handles the existence check internally
-                await _unitOfWork.Users.DeleteByIdAsync(id);
-                await _unitOfWork.SaveChangesAsync();
+                // Check if user exists first
+                var existingUser = await _unitOfWork.Users.GetByIdAsync(id);
+                if (existingUser == null)
+                {
+                    return ServiceResult<bool>.Failure("المستخدم غير موجود");
+                }
 
+                // Use the BaseRepo's DeleteByIdAsync method which handles the deletion and saves immediately
+                await _unitOfWork.Users.DeleteByIdAsync(id);
+                
+                // No need to call SaveChangesAsync as DeleteByIdAsync already saves the data
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
                 // Log exception
-                return ServiceResult<bool>.Failure("حدث خطأ أثناء حذف المستخدم");
+                return ServiceResult<bool>.Failure("حدث خطأ أثناء حذف المستخدم: " + ex.Message);
             }
         }
 

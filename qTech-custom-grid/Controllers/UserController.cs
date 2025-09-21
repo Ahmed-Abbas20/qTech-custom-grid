@@ -306,7 +306,9 @@ namespace qTech_custom_grid.Controllers
                     });
                 }
 
+                System.Diagnostics.Debug.WriteLine($"Attempting to delete user with ID: {request.id}");
                 var result = await _userService.DeleteUserAsync(request.id);
+                System.Diagnostics.Debug.WriteLine($"Delete result: Success={result.IsSuccess}, Message={result.ErrorMessage}");
                 
                 if (result.IsSuccess)
                 {
@@ -325,9 +327,10 @@ namespace qTech_custom_grid.Controllers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Delete exception: {ex.Message}");
                 return Json(new { 
                     success = false, 
-                    message = "حدث خطأ غير متوقع" 
+                    message = "حدث خطأ غير متوقع: " + ex.Message 
                 });
             }
         }

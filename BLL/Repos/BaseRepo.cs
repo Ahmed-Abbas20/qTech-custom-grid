@@ -152,15 +152,24 @@ namespace BLL.Repos
 
         public virtual async Task DeleteByIdAsync(int id)
         {
+            System.Diagnostics.Debug.WriteLine($"DeleteByIdAsync called for type {typeof(T).Name} with ID: {id}");
+            
             var data = await _dataService.ReadDataAsync();
+            System.Diagnostics.Debug.WriteLine($"Current users count before delete: {data.Users.Count}");
             
             if (typeof(T) == typeof(Bank))
             {
                 var bank = data.Banks.FirstOrDefault(b => b.Id == id);
                 if (bank != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Removing bank with ID: {id}");
                     data.Banks.Remove(bank);
                     await _dataService.WriteDataAsync(data);
+                    System.Diagnostics.Debug.WriteLine("Bank removed successfully");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Bank with ID {id} not found");
                 }
             }
             else if (typeof(T) == typeof(MaritalStatus))
@@ -168,8 +177,14 @@ namespace BLL.Repos
                 var maritalStatus = data.MaritalStatuses.FirstOrDefault(m => m.Id == id);
                 if (maritalStatus != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Removing marital status with ID: {id}");
                     data.MaritalStatuses.Remove(maritalStatus);
                     await _dataService.WriteDataAsync(data);
+                    System.Diagnostics.Debug.WriteLine("Marital status removed successfully");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Marital status with ID {id} not found");
                 }
             }
             else if (typeof(T) == typeof(User))
@@ -177,8 +192,14 @@ namespace BLL.Repos
                 var user = data.Users.FirstOrDefault(u => u.Id == id);
                 if (user != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Removing user with ID: {id}, Name: {user.FirstName} {user.FamilyName}");
                     data.Users.Remove(user);
                     await _dataService.WriteDataAsync(data);
+                    System.Diagnostics.Debug.WriteLine($"User removed successfully. New users count: {data.Users.Count}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"User with ID {id} not found");
                 }
             }
         }
