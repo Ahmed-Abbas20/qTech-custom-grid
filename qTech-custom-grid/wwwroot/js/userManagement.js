@@ -1,8 +1,6 @@
-/**
- * User Management Module
- * Consolidated JavaScript for user grid and create modal functionality
- * No global variables - everything encapsulated in UserManagement module
- */
+
+ // User Management Module
+ 
 (function() {
     'use strict';
 
