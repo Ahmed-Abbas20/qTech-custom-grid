@@ -1,11 +1,7 @@
 
- // User Management Module
- 
-
 
     // Main UserManagement module
     var UserManagement = {
-        // Private variables
         usersGrid: null,
         selectedUserId: null,
         validationArray: null,
@@ -66,8 +62,6 @@
                 onGridRowsComplete: function(utility) {
                     // Apply single check with a small delay to ensure DOM is ready
                     setTimeout(function() {
-                        // Unselect any previous selection and disable actions on page change
-                        $('input[name="cb_Select"]').prop('checked', false).removeAttr('checked');
                         UserManagement.selectedUserId = null;
                         UserManagement.updateActionButtons();
                         UserManagement.applySingleCheck();
@@ -83,34 +77,31 @@
         // Update selected user from checkbox
         updateSelectedUser: function() {
             UserManagement.selectedUserId = null;
-            
-            $('input[name="cb_Select"]:checked').each(function(index, element) {
-                var $checkbox = $(element);
-                var checkboxId = $checkbox.attr('id');
-                
-                if (checkboxId && checkboxId.indexOf('cb_Select_') !== -1) {
-                    var userId = parseInt(checkboxId.replace('cb_Select_', ''));
-                    if (!isNaN(userId)) {
-                        UserManagement.selectedUserId = userId;
+            var table = document.getElementById('tbl_Users');
+            if (!table) return;
+            var inputs = table.getElementsByTagName('input');
+            for (var i = 0; i < inputs.length; i++) {
+                var el = inputs[i];
+                if (el && el.type === 'checkbox' && el.name === 'cb_Select' && el.checked) {
+                    var checkboxId = el.id || '';
+                    if (checkboxId.indexOf('cb_Select_') !== -1) {
+                        var userId = parseInt(checkboxId.replace('cb_Select_', ''), 10);
+                        if (!isNaN(userId)) {
+                            UserManagement.selectedUserId = userId;
+                            break;
+                        }
                     }
                 }
-            });
+            }
         },
 
         // Update action buttons state
         updateActionButtons: function() {
             var hasSelection = UserManagement.selectedUserId !== null;
-            
-            var $viewBtn = $('#btn_View');
-            var $deleteBtn = $('#btn_Delete');
-            
-            if (hasSelection) {
-                $viewBtn.prop('disabled', false).removeAttr('disabled');
-                $deleteBtn.prop('disabled', false).removeAttr('disabled');
-            } else {
-                $viewBtn.prop('disabled', true).attr('disabled', 'disabled');
-                $deleteBtn.prop('disabled', true).attr('disabled', 'disabled');
-            }
+            var viewBtn = document.getElementById('btn_View');
+            var deleteBtn = document.getElementById('btn_Delete');
+            if (viewBtn) viewBtn.disabled = !hasSelection;
+            if (deleteBtn) deleteBtn.disabled = !hasSelection;
         },
 
         // Apply single check functionality using mSingleCheck.js
@@ -120,7 +111,6 @@
             }
 
             // Apply mSingleCheck with proper configuration
-            try {
                 mScript.mSingleCheck({
                     Container: 'tbl_Users',
                     setIds: false, // Don't let mSingleCheck change the IDs
@@ -133,41 +123,35 @@
                         UserManagement.updateActionButtons();
                     }
                 });
-            } catch (e) {
-                // Silent error handling
-            }
+           
             
-            // Manual fallback - bind change events directly to checkboxes
-            setTimeout(function() {
-                $('input[name="cb_Select"]').off('change.manual').on('change.manual', function(event) {
-                    var checkbox = event.target;
-                    if (checkbox.checked) {
-                        // Uncheck all other checkboxes
-                        $('input[name="cb_Select"]').not(checkbox).prop('checked', false);
-                    }
-                    UserManagement.updateSelectedUser();
-                    UserManagement.updateActionButtons();
-                });
-            }, 200);
         },
 
 
         // Bind action buttons
         bindActionButtons: function() {
-            $('#btn_Search').on('click', function() { UserManagement.performSearch(); });
-            $('#btn_ClearSearch').on('click', function() { UserManagement.clearSearch(); });
-            $('#txt_PhoneSearch, #txt_IdSearch').on('keypress', function(e) {
-                if (e.which === 13) UserManagement.performSearch();
-            });
-            $('#btn_Add').on('click', function() { UserManagement.showCreateModal(); });
-            $('#btn_View').on('click', function() { UserManagement.viewSelectedUser(); });
-            $('#btn_Delete').on('click', function() { UserManagement.deleteSelectedUsers(); });
+            var btnSearch = document.getElementById('btn_Search');
+            if (btnSearch) btnSearch.addEventListener('click', function(){ UserManagement.performSearch(); });
+            var btnClear = document.getElementById('btn_ClearSearch');
+            if (btnClear) btnClear.addEventListener('click', function(){ UserManagement.clearSearch(); });
+            var txtPhone = document.getElementById('txt_PhoneSearch');
+            if (txtPhone) txtPhone.addEventListener('keypress', function(e){ if ((e.which===13) || (e.key==='Enter')) UserManagement.performSearch(); });
+            var txtId = document.getElementById('txt_IdSearch');
+            if (txtId) txtId.addEventListener('keypress', function(e){ if ((e.which===13) || (e.key==='Enter')) UserManagement.performSearch(); });
+            var btnAdd = document.getElementById('btn_Add');
+            if (btnAdd) btnAdd.addEventListener('click', function(){ UserManagement.showCreateModal(); });
+            var btnView = document.getElementById('btn_View');
+            if (btnView) btnView.addEventListener('click', function(){ UserManagement.viewSelectedUser(); });
+            var btnDel = document.getElementById('btn_Delete');
+            if (btnDel) btnDel.addEventListener('click', function(){ UserManagement.deleteSelectedUsers(); });
         },
 
         // Search functionality
         performSearch: function() {
-            var phoneSearch = $('#txt_PhoneSearch').val().trim();
-            var idSearch = $('#txt_IdSearch').val().trim();
+            var phoneEl = document.getElementById('txt_PhoneSearch');
+            var idEl = document.getElementById('txt_IdSearch');
+            var phoneSearch = phoneEl ? (phoneEl.value || '').trim() : '';
+            var idSearch = idEl ? (idEl.value || '').trim() : '';
             var searchObject = { 
                 phoneSearch: phoneSearch,
                 idSearch: idSearch
@@ -175,8 +159,10 @@
             UserManagement.usersGrid.searchObject = searchObject;
             
             // Disable view and delete buttons during search
-            $('#btn_View').prop('disabled', true);
-            $('#btn_Delete').prop('disabled', true);
+            var v = document.getElementById('btn_View');
+            var d = document.getElementById('btn_Delete');
+            if (v) v.disabled = true;
+            if (d) d.disabled = true;
             UserManagement.selectedUserId = null;
             
             Reload(searchObject, UserManagement.usersGrid);
@@ -188,14 +174,18 @@
 
         // Clear search functionality
         clearSearch: function() {
-            $('#txt_PhoneSearch').val('');
-            $('#txt_IdSearch').val('');
+            var phoneEl = document.getElementById('txt_PhoneSearch');
+            if (phoneEl) phoneEl.value = '';
+            var idEl = document.getElementById('txt_IdSearch');
+            if (idEl) idEl.value = '';
             var emptySearchObject = { phoneSearch: '', idSearch: '' };
             UserManagement.usersGrid.searchObject = emptySearchObject;
             
             // Disable view and delete buttons during clear search
-            $('#btn_View').prop('disabled', true);
-            $('#btn_Delete').prop('disabled', true);
+            var v = document.getElementById('btn_View');
+            var d = document.getElementById('btn_Delete');
+            if (v) v.disabled = true;
+            if (d) d.disabled = true;
             UserManagement.selectedUserId = null;
             
             Reload(emptySearchObject, UserManagement.usersGrid);
@@ -209,8 +199,16 @@
         showCreateModal: function() {
             $.get('/User/Create')
                 .done(function(html) {
-                    $('#userModalContainer').html(html);
+                    var c = document.getElementById('userModalContainer');
+                    if (c) c.innerHTML = html;
                     UserManagement.isModalOpen = true;
+                    var modalEl = document.getElementById('createUserModal');
+                    if (modalEl && window.bootstrap && bootstrap.Modal) {
+                        modalEl.addEventListener('shown.bs.modal', function(){ UserManagement.initializeModalValidation(); }, { once: true });
+                        modalEl.addEventListener('hidden.bs.modal', function(){ UserManagement.isModalOpen = false; var cont = document.getElementById('userModalContainer'); if (cont) cont.innerHTML = ''; }, { once: true });
+                        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
                 })
                 .fail(function() {
                     alert('حدث خطأ أثناء تحميل نموذج الإضافة');
@@ -227,14 +225,26 @@
         // Delete selected user
         deleteSelectedUsers: function() {
             if (!UserManagement.selectedUserId) return;
-            
-            $('#confirmationModalLabel').text('تأكيد الحذف');
-            $('#confirmationModalBody').text('هل أنت متأكد من حذف هذا المستخدم؟');
-            $('#confirmActionBtn').off('click').on('click', function() {
-                $('#confirmationModal').modal('hide');
-                UserManagement.performDelete();
-            });
-            $('#confirmationModal').modal('show');
+            var title = document.getElementById('confirmationModalLabel');
+            var body = document.getElementById('confirmationModalBody');
+            if (title) title.textContent = 'تأكيد الحذف';
+            if (body) body.textContent = 'هل أنت متأكد من حذف هذا المستخدم؟';
+            var confirmBtn = document.getElementById('confirmActionBtn');
+            if (confirmBtn) {
+                confirmBtn.onclick = function() {
+                    var modalEl = document.getElementById('confirmationModal');
+                    if (modalEl && window.bootstrap && bootstrap.Modal) {
+                        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.hide();
+                    }
+                    UserManagement.performDelete();
+                };
+            }
+            var modalElShow = document.getElementById('confirmationModal');
+            if (modalElShow && window.bootstrap && bootstrap.Modal) {
+                var mdl = bootstrap.Modal.getInstance(modalElShow) || new bootstrap.Modal(modalElShow);
+                mdl.show();
+            }
         },
 
         // Perform actual delete
@@ -273,16 +283,7 @@
 
         // Bind modal events
         bindModalEvents: function() {
-            // Listen for modal events
-            $(document).on('shown.bs.modal', '#createUserModal', function() {
-                UserManagement.initializeModalValidation();
-            });
-            
-            $(document).on('hidden.bs.modal', '#createUserModal', function() {
-                UserManagement.isModalOpen = false;
-                // Clean up modal content
-                $('#userModalContainer').empty();
-            });
+            // No global jQuery bindings; handled in showCreateModal per instance
         },
 
         // Initialize modal validation
@@ -458,7 +459,9 @@
                         checkExist: {
                             Url: '/User/CheckIdentityExists',
                             Data: function() {
-                                return JSON.stringify({ identityNumber: $('#txt_IdentityNumber').val() });
+                                var el = document.getElementById('txt_IdentityNumber');
+                                var val = el ? el.value : '';
+                                return JSON.stringify({ identityNumber: val });
                             },
                             successValue: false,
                             Msg: 'عفوا رقم الهوية مكرر'
@@ -589,7 +592,7 @@
                 if (item.validationScheme && item.validationScheme.Required) {
                     var asteriskElement = document.getElementById(item.spn_A);
                     if (asteriskElement) {
-                        asteriskElement.style.color = 'black'; // Start with black, turn red on validation failure
+                        asteriskElement.style.color = 'black'; 
                     }
                 }
             });
@@ -601,43 +604,49 @@
             AddValidationEvents(UserManagement.validationArray);
 
             // Calculate leave balance when appointment date changes
-            $('#txt_DateOfAppointment').on('change', function() {
-                UserManagement.calculateLeaveBalance();
-            });
+            var appt = document.getElementById('txt_DateOfAppointment');
+            if (appt) {
+                appt.addEventListener('change', function() { UserManagement.calculateLeaveBalance(); });
+            }
 
             // Save button click
-            $('#btn_SaveUser').on('click', function() {
-                // Run validation using mValidation.js
-                var validationResult = validateAll(UserManagement.validationArray, 1);
-                
-                if (validationResult) {
-                    UserManagement.saveUser();
-                } else {
-                    alert('برجاء تصحيح الأخطاء في النموذج أولاً');
-                }
-            });
+            var saveBtn = document.getElementById('btn_SaveUser');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    var validationResult = validateAll(UserManagement.validationArray, 1);
+                    if (validationResult) {
+                        UserManagement.saveUser();
+                    } else {
+                        alert('برجاء تصحيح الأخطاء في النموذج أولاً');
+                    }
+                });
+            }
 
             // Clear validation button
-            $('#btn_ClearValidation').on('click', function() {
-                clearValidation(UserManagement.validationArray);
-            });
+            var clrBtn = document.getElementById('btn_ClearValidation');
+            if (clrBtn) {
+                clrBtn.addEventListener('click', function() { clearValidation(UserManagement.validationArray); });
+            }
 
             // Reset form button
-            $('#btn_ResetForm').on('click', function() {
-                // Clear all form fields
-                $('#createUserForm')[0].reset();
-                // Clear validation
-                clearValidation(UserManagement.validationArray);
-                // Reset leave balance
-                $('#lbl_LeaveBalance').text('0 يوم');
-                // Reset default values
-                $('#radio_Male').prop('checked', true);
-            });
+            var rstBtn = document.getElementById('btn_ResetForm');
+            if (rstBtn) {
+                rstBtn.addEventListener('click', function() {
+                    var formEl = document.getElementById('createUserForm');
+                    if (formEl) formEl.reset();
+                    clearValidation(UserManagement.validationArray);
+                    var lbl = document.getElementById('lbl_LeaveBalance');
+                    if (lbl) lbl.textContent = '0 يوم';
+                    var male = document.getElementById('radio_Male');
+                    if (male) male.checked = true;
+                });
+            }
         },
 
         // Calculate leave balance
         calculateLeaveBalance: function() {
-            var appointmentDate = $('#txt_DateOfAppointment').val();
+            var appt = document.getElementById('txt_DateOfAppointment');
+            var appointmentDate = appt ? appt.value : '';
             if (appointmentDate) {
                 var appointment = new Date(appointmentDate);
                 var today = new Date();
@@ -657,16 +666,18 @@
                 
                 var totalMonths = yearsDiff * 12 + monthsDiff;
                 var leaveBalance = Math.floor((totalMonths / 12) * 21);
-                
-                $('#lbl_LeaveBalance').text(leaveBalance + ' يوم');
+                var lbl = document.getElementById('lbl_LeaveBalance');
+                if (lbl) lbl.textContent = leaveBalance + ' يوم';
             } else {
-                $('#lbl_LeaveBalance').text('0 يوم');
+                var lbl0 = document.getElementById('lbl_LeaveBalance');
+                if (lbl0) lbl0.textContent = '0 يوم';
             }
         },
 
         // Save user function
         saveUser: function() {
-            var formData = new FormData($('#createUserForm')[0]);
+            var formEl = document.getElementById('createUserForm');
+            var formData = new FormData(formEl);
             
             $.ajax({
                 url: '/User/Create',
@@ -676,7 +687,11 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        $('#createUserModal').modal('hide');
+                        var modalEl = document.getElementById('createUserModal');
+                        if (modalEl && window.bootstrap && bootstrap.Modal) {
+                            var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            modal.hide();
+                        }
                         alert(response.message);
                         UserManagement.refreshGrid();
                     } else {
