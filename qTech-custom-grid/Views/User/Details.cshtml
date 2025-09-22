@@ -235,9 +235,9 @@
                 
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
-                        <a href="@Url.Action("Index", "User")" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> العودة للقائمة
-                        </a>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='@Url.Action("Index", "User")'">
+                           <i class="fas fa-arrow-left"></i> العودة للقائمة
+                        </button>
                         <div>
                             <a href="@Url.Action("Edit", "User", new { id = Model.Id })" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> تعديل

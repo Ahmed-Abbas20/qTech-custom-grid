@@ -1,5 +1,22 @@
 
-
+// Global for mGrid pager input (must be defined on window)
+window.numbers_only_grid_page = function (e) {
+    var ev = e || window.event;
+    var key = ev.which != null ? ev.which : ev.keyCode;
+    var isNumber = (key >= 48 && key <= 57) || (key >= 96 && key <= 105);
+    var isControl = key === 8 || key === 46 || key === 37 || key === 39 || key === 9 || key === 13;
+    if (isNumber || isControl) return true;
+    if (ev.preventDefault) ev.preventDefault();
+    ev.returnValue = false;
+    return false;
+};
+    window.UserManagement = UserManagement;
+    window.refreshUsersGrid = function() { UserManagement.refreshGrid(); };
+    window.td_MouseOver = td_MouseOver;
+    window.td_MouseOut = td_MouseOut;
+    window.div_title_MouseOver = div_title_MouseOver;
+    window.div_title_MouseOut = div_title_MouseOut;
+    window.convertDateBeforeValidation = convertDateBeforeValidation;
     // Main UserManagement module
     var UserManagement = {
         usersGrid: null,
@@ -767,13 +784,6 @@
         UserManagement.init();
     });
 
-    // Expose only necessary functions globally for compatibility
-    window.UserManagement = UserManagement;
-    window.refreshUsersGrid = function() { UserManagement.refreshGrid(); };
-    window.td_MouseOver = td_MouseOver;
-    window.td_MouseOut = td_MouseOut;
-    window.div_title_MouseOver = div_title_MouseOver;
-    window.div_title_MouseOut = div_title_MouseOut;
-    window.convertDateBeforeValidation = convertDateBeforeValidation;
+
 
 
