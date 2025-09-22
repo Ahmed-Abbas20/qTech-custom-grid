@@ -1,8 +1,7 @@
 
  // User Management Module
  
-(function() {
-    'use strict';
+
 
     // Main UserManagement module
     var UserManagement = {
@@ -64,18 +63,17 @@
                 Loader: {
                     Container: { ID: 'div_Loader' }
                 },
-                onGridComplete: function(utility) {
+                onGridRowsComplete: function(utility) {
                     // Apply single check with a small delay to ensure DOM is ready
                     setTimeout(function() {
+                        // Unselect any previous selection and disable actions on page change
+                        $('input[name="cb_Select"]').prop('checked', false).removeAttr('checked');
+                        UserManagement.selectedUserId = null;
+                        UserManagement.updateActionButtons();
                         UserManagement.applySingleCheck();
                     }, 100);
                 },
-                onRowComplete: function(row) {
-                    // Reapply single check for each row completion
-                    setTimeout(function() {
-                        UserManagement.applySingleCheck();
-                    }, 50);
-                }
+
             };
 
             mGridInitialize(UserManagement.usersGrid);
@@ -119,24 +117,6 @@
         applySingleCheck: function() {
             if (!(window.mScript && typeof mScript.mSingleCheck === 'function')) {
                 return;
-            }
-            
-            // Clear any existing handlers first
-            try {
-                var container = mScript.getByIds('tbl_Users');
-                if (container && typeof container.getByTypes === 'function') {
-                    var group = container.getByTypes(['checkbox']);
-                    if (group && group.Elements) {
-                        for (var i = 0; i < group.Elements.length; i++) {
-                            group.Elements[i].onclick = null;
-                            group.Elements[i].onchange = null;
-                            group.Elements[i].removeAttribute('checkedFlag');
-                            // Don't uncheck checkboxes - let mSingleCheck handle the state
-                        }
-                    }
-                }
-            } catch (e) { 
-                // Silent error handling
             }
 
             // Apply mSingleCheck with proper configuration
@@ -781,4 +761,4 @@
     window.div_title_MouseOut = div_title_MouseOut;
     window.convertDateBeforeValidation = convertDateBeforeValidation;
 
-})();
+
