@@ -599,26 +599,6 @@
       "hiringDate": "2023-02-14T00:00:00",
       "createdAt": "2023-01-30T00:00:00",
       "updatedAt": "2023-01-30T00:00:00"
-    },
-    {
-      "id": 31,
-      "firstName": "\u0627\u062D\u0645\u062F",
-      "fatherName": "\u0645\u062D\u0645\u062F",
-      "grandFatherName": "\u0645\u062D\u0645\u0648\u062F",
-      "familyName": "\u0639\u0628\u0627\u0633",
-      "dateOfBirth": "2001-01-01T00:00:00",
-      "bankAccountNumber": "12255",
-      "identityNumber": "4424",
-      "bankId": null,
-      "nationality": 2,
-      "mobileNumber": "966536987541",
-      "gender": 1,
-      "email": "ahmed.abbas@alqemam.com",
-      "maritalStatusId": null,
-      "educationalQualification": null,
-      "hiringDate": "2025-02-02T00:00:00",
-      "createdAt": "2025-09-23T14:31:12.9391747+03:00",
-      "updatedAt": "2025-09-23T14:31:12.9391754+03:00"
     }
   ],
   "banks": [

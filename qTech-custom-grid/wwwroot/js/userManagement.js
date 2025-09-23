@@ -23,6 +23,8 @@ window.numbers_only_grid_page = function (e) {
         selectedUserId: null,
         validationArray: null,
         isModalOpen: false,
+        // Configurable allowlist for email domains
+        allowedEmailDomains: ['gmail.com','outlook.com','hotmail.com','yahoo.com','icloud.com'],
 
         // Initialize the module
         init: function() {
@@ -523,6 +525,22 @@ window.numbers_only_grid_page = function (e) {
                                 Value: 50,
                                 Msg: 'البريد الإلكتروني لا يجب أن يتجاوز 50 حرف'
                             }
+                        },
+                        vFunction: {
+                            Func: function (text, ctx) {
+                                var v = (text || '').trim();
+                               
+                                var m = v.match(/@([^@]+)$/);
+                                var domain = m ? m[1].toLowerCase() : '';
+                                var allowed = (UserManagement && Array.isArray(UserManagement.allowedEmailDomains))
+                                    ? UserManagement.allowedEmailDomains
+                                    : [];
+                                if (allowed.length > 0 && allowed.indexOf(domain) === -1) {
+                                    return 'نطاق البريد غير مسموح. النطاقات المسموحة: ' + allowed.join(', ');
+                                }
+                                return true;
+                            },
+                            Msg: 'عفوا صيغة البريد الالكتروني غير صحيح'
                         }
                     },
                     isBlur: true
@@ -781,6 +799,8 @@ window.numbers_only_grid_page = function (e) {
 
     // Initialize when document is ready
     $(document).ready(function() {
+        // Apply email domain allowlist (edit as needed)
+        UserManagement.allowedEmailDomains = ['gmail.com','outlook.com','hotmail.com','yahoo.com','icloud.com'];
         UserManagement.init();
     });
 
