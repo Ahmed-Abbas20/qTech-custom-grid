@@ -202,14 +202,35 @@ namespace qTech_custom_grid.Controllers
         /// <param name="identityNumber">Identity number to check</param>
         /// <returns>JSON result indicating if identity exists</returns>
         [HttpPost]
-        public async Task<IActionResult> CheckIdentityExists(string identityNumber)
+        public async Task<IActionResult> CheckIdentityExists([FromBody] System.Text.Json.JsonElement payload)
         {
             try
             {
+                // Expect JSON: { "identityNumber": "..." }
+                string identityNumber = string.Empty;
+                if (payload.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                    payload.TryGetProperty("identityNumber", out var idProp) &&
+                    idProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    identityNumber = idProp.GetString() ?? string.Empty;
+                }
+                else if (Request.HasFormContentType && Request.Form.ContainsKey("identityNumber"))
+                {
+                    identityNumber = Request.Form["identityNumber"].ToString();
+                }
+
+                // Normalize whitespace and Arabic-Indic digits
+                identityNumber = (identityNumber ?? string.Empty).Trim();
+                identityNumber = identityNumber
+                    .Replace('٠', '0').Replace('١', '1').Replace('٢', '2').Replace('٣', '3').Replace('٤', '4')
+                    .Replace('٥', '5').Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9')
+                    .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3').Replace('۴', '4')
+                    .Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
+
                 var exists = await _userService.CheckIdentityNumberExistsAsync(identityNumber);
                 return Json(new { d = exists });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { d = false });
             }

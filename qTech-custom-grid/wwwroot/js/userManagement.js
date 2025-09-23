@@ -1,5 +1,5 @@
 
-// Global for mGrid pager input (must be defined on window)
+// Global for mGrid pager input 
 window.numbers_only_grid_page = function (e) {
     var ev = e || window.event;
     var key = ev.which != null ? ev.which : ev.keyCode;
