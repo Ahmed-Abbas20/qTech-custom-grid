@@ -33,34 +33,43 @@ window.numbers_only_grid_page = function (e) {
             UserManagement.bindModalEvents();
         },
 
-        // Initialize mGrid for users
+        // Initialize mGrid for users using native mGrid structure (no GridHelper, no globals)
         initializeUsersGrid: function() {
-            UserManagement.usersGrid = {
-                Table: {
-                    ID: 'tbl_Users',
-                    Header: { Row: {} },
-                    Body: { Row: {} }
-                },
-                Columns: [
-                    GridHelper.getGridColumnCheckBoxObj("", "50px", "Id", {
-                        check_OnChange: function() {
-                            // This will be handled by mSingleCheck
-                        }
-                    }),
-                    GridHelper.getGridColumnObj('IdentityNumber', "رقم الهوية", false, 120, 30, true),
-                    GridHelper.getGridColumnObj('FullName', "اسم الموظف", true, 200, 30, true),
-                    GridHelper.getGridColumnObj('MobileNumber', "رقم الجوال", false, 120, 30, true),
-                    GridHelper.getGridColumnObj('MaritalStatusName', "الحالة الاجتماعية", false, 150, 30, true),
-                    GridHelper.getGridColumnObj('NationalityName', "الجنسية", false, 100, 30, true),
-                    GridHelper.getGridColumnObj('Email', "البريد الإلكتروني", true, 200, 30, true)
-                ],
+            var cfg = {
                 Url: '/User/GetUsersForGrid',
                 requestType: 'POST',
-                pageRowCounts: 10,
+                searchObject: {},
                 sortColumn: 'FullName',
                 sortOrder: 'ASC',
+                pageIndex: '1',
+                pageRowCounts: '10',
                 sortingNotificator: false,
-                searchObject: {},
+                Table: { ID: 'tbl_Users', Header: { Row: {} }, Body: { Row: {} } },
+                Columns: [
+                    {
+                        Name: 'CheckBox',
+                        Header: { Text: '' },
+                        Cell: {
+                            onCellComplete: function (td, cellData, row) {
+                                var chk = document.createElement('input');
+                                chk.type = 'checkbox';
+                                chk.name = 'cb_Select';
+                                chk.id = 'cb_Select_' + row.Id;
+                                td.innerHTML = '';
+                                td.appendChild(chk);
+                                td.style.width = '50px';
+                                td.style.textAlign = 'center';
+                            }
+                        },
+                        Sort: false
+                    },
+                    { Name: 'IdentityNumber', Header: { Text: 'رقم الهوية' }, Width: '120px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text; } } },
+                    { Name: 'FullName', Header: { Text: 'اسم الموظف' }, Width: '200px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text; } } },
+                    { Name: 'MobileNumber', Header: { Text: 'رقم الجوال' }, Width: '120px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text; } } },
+                    { Name: 'MaritalStatusName', Header: { Text: 'الحالة الاجتماعية' }, Width: '150px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text; } } },
+                    { Name: 'NationalityName', Header: { Text: 'الجنسية' }, Width: '100px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text; } } },
+                    { Name: 'Email', Header: { Text: 'البريد الإلكتروني' }, Width: '200px', Sort: true, Cell: { onCellComplete: function(td, text){ td.textContent = text || 'غير محدد'; } } }
+                ],
                 Pager: {
                     Container: { ID: 'div_Pager' },
                     firstButton: { ID: 'btn_First' },
@@ -71,24 +80,18 @@ window.numbers_only_grid_page = function (e) {
                     pagesCountLabel: { ID: 'lbl_PagesCount' },
                     rowsCountLabel: { ID: 'lbl_RowsCount' }
                 },
-                Empty: {
-                    ID: 'div_Empty',
-                    Text: 'لا توجد بيانات للعرض'
-                },
-                Loader: {
-                    Container: { ID: 'div_Loader' }
-                },
-                onGridRowsComplete: function(utility) {
-                    // Apply single check with a small delay to ensure DOM is ready
+                Empty: { ID: 'div_Empty', Text: 'لا توجد بيانات للعرض' },
+                Loader: { Container: { ID: 'div_Loader' } },
+                onGridRowsComplete: function() {
                     setTimeout(function() {
                         UserManagement.selectedUserId = null;
                         UserManagement.updateActionButtons();
                         UserManagement.applySingleCheck();
                     }, 100);
-                },
-
+                }
             };
 
+            UserManagement.usersGrid = cfg;
             mGridInitialize(UserManagement.usersGrid);
             UserManagement.applySingleCheck();
         },
