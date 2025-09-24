@@ -33,7 +33,7 @@ window.numbers_only_grid_page = function (e) {
             UserManagement.bindModalEvents();
         },
 
-        // Initialize mGrid for users using native mGrid structure (no GridHelper, no globals)
+        // Initialize mGrid for users 
         initializeUsersGrid: function() {
             var cfg = {
                 Url: '/User/GetUsersForGrid',
